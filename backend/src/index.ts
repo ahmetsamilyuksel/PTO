@@ -27,7 +27,7 @@ const app = express();
 
 app.use(cors({
   origin: process.env.VERCEL === '1'
-    ? [/\.wornetpro\.life$/, /\.vercel\.app$/]
+    ? [/\.wornetpro\.life$/, /\.vercel\.app$/, /^https?:\/\/pto[^.]*\.vercel\.app$/]
     : '*',
   credentials: true,
 }));
