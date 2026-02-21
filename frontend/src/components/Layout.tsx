@@ -14,6 +14,12 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   GlobalOutlined,
+  CheckSquareOutlined,
+  BugOutlined,
+  RocketOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
+  SnippetsOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import type { MenuProps } from 'antd';
@@ -131,6 +137,44 @@ const AppLayout: React.FC = () => {
             },
           ],
         },
+        { type: 'divider' as const },
+        {
+          key: `project-${activeProjectId}-ops`,
+          icon: <RocketOutlined />,
+          label: t.progress?.title || 'Operations',
+          children: [
+            {
+              key: `/projects/${activeProjectId}/tasks`,
+              icon: <CheckSquareOutlined />,
+              label: t.menu.tasks,
+            },
+            {
+              key: `/projects/${activeProjectId}/corrections`,
+              icon: <BugOutlined />,
+              label: t.menu.corrections,
+            },
+            {
+              key: `/projects/${activeProjectId}/progress`,
+              icon: <RocketOutlined />,
+              label: t.menu.progress,
+            },
+            {
+              key: `/projects/${activeProjectId}/team`,
+              icon: <TeamOutlined />,
+              label: t.menu.team,
+            },
+            {
+              key: `/projects/${activeProjectId}/categories`,
+              icon: <AppstoreOutlined />,
+              label: t.menu.categories,
+            },
+            {
+              key: `/projects/${activeProjectId}/templates`,
+              icon: <SnippetsOutlined />,
+              label: t.menu.templates,
+            },
+          ],
+        },
       );
     }
 
@@ -218,7 +262,7 @@ const AppLayout: React.FC = () => {
           theme="dark"
           mode="inline"
           selectedKeys={selectedKeys}
-          defaultOpenKeys={['projects-group', `project-${activeProjectId}-menu`]}
+          defaultOpenKeys={['projects-group', `project-${activeProjectId}-menu`, `project-${activeProjectId}-ops`]}
           items={buildMenuItems()}
           onClick={handleMenuClick}
         />

@@ -19,6 +19,12 @@ import packageRoutes from './routes/packages';
 import matrixRoutes from './routes/matrix';
 import attachmentRoutes from './routes/attachments';
 import dashboardRoutes from './routes/dashboard';
+import categoryRoutes from './routes/categories';
+import customTemplateRoutes from './routes/customTemplates';
+import taskRoutes from './routes/tasks';
+import correctionRoutes from './routes/corrections';
+import progressRoutes from './routes/progress';
+import teamRoutes from './routes/team';
 import { initMinIO } from './services/storage';
 
 export const prisma = new PrismaClient();
@@ -59,6 +65,12 @@ app.use('/api/packages', packageRoutes);
 app.use('/api/matrix', matrixRoutes);
 app.use('/api/attachments', attachmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/custom-templates', customTemplateRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/corrections', correctionRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/team', teamRoutes);
 
 // Export app for Vercel serverless
 export default app;

@@ -57,6 +57,14 @@ model Person {
   workflowTransitions WorkflowTransition[]
   incomingControls    IncomingControl[]
   createdDocuments    Document[] @relation("DocumentCreator")
+  createdTemplates    CustomTemplate[] @relation("TemplateCreator")
+  createdTasks        Task[] @relation("TaskCreator")
+  taskAssignments     TaskAssignment[] @relation("TaskAssignee")
+  taskAssignedBy      TaskAssignment[] @relation("TaskAssigner")
+  correctionAssigned  DocumentCorrection[] @relation("CorrectionAssignee")
+  correctionReported  DocumentCorrection[] @relation("CorrectionReporter")
+  correctionResolved  DocumentCorrection[] @relation("CorrectionResolver")
+  correctionComments  CorrectionComment[] @relation("CorrectionCommentAuthor")
 }
 
 enum UserRole {
@@ -107,6 +115,11 @@ model Project {
   journals        Journal[]
   packages        Package[]
   documentMatrixRules DocumentMatrixRule[]
+  customCategories   CustomCategory[]
+  customTemplates    CustomTemplate[]
+  tasks              Task[]
+  corrections        DocumentCorrection[]
+  milestones         ProjectMilestone[]
 }
 
 enum ProjectType {
@@ -358,11 +371,18 @@ model Document {
   deletedAt       DateTime?
   lockedAt        DateTime? // Блокировка после подписания
 
+  customCategoryId String?
+  customCategory   CustomCategory? @relation("DocumentCustomCategory", fields: [customCategoryId], references: [id])
+  customTemplateId String?
+  customTemplate   CustomTemplate? @relation("DocumentCustomTemplate", fields: [customTemplateId], references: [id])
+
   signatures      DocumentSignature[]
   attachments     Attachment[]
   journalLinks    JournalEntryDocLink[]
   packageItems    PackageItem[]
   workflowHistory WorkflowTransition[]
+  tasks           Task[] @relation("TaskDocument")
+  corrections     DocumentCorrection[] @relation("DocumentCorrections")
 }
 
 enum DocumentType {
@@ -624,6 +644,209 @@ enum AuditAction {
   REJECT
   EXPORT
   PACKAGE
+  TASK_ASSIGN
+  CORRECTION
+}
+
+// ─── ПОЛЬЗОВАТЕЛЬСКАЯ КАТЕГОРИЯ ДОКУМЕНТА (Custom Document Category) ───
+model CustomCategory {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  name        String
+  code        String
+  description String?
+  parentId    String?
+  parent      CustomCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    CustomCategory[] @relation("CategoryHierarchy")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  documents   Document[] @relation("DocumentCustomCategory")
+
+  @@unique([projectId, code])
+}
+
+// ─── ПОЛЬЗОВАТЕЛЬСКИЙ ШАБЛОН (Custom Template) ───
+model CustomTemplate {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  name          String
+  description   String?
+  documentType  DocumentType?
+  categoryId    String?
+  filePath      String?
+  fileName      String?
+  fileSize      Int?
+  fields        Json?
+  format        String?  @default("DOCX")
+  version       Int      @default(1)
+  isActive      Boolean  @default(true)
+  createdById   String
+  createdBy     Person   @relation("TemplateCreator", fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  documents     Document[] @relation("DocumentCustomTemplate")
+}
+
+// ─── ЗАДАЧА (Task / Görev) ───
+model Task {
+  id            String     @id @default(uuid())
+  projectId     String
+  project       Project    @relation(fields: [projectId], references: [id])
+  title         String
+  description   String?
+  priority      TaskPriority @default(MEDIUM)
+  status        TaskStatus   @default(PENDING)
+  dueDate       DateTime?
+  reminderDate  DateTime?
+  reminderSent  Boolean    @default(false)
+  relatedDocId  String?
+  relatedDoc    Document?  @relation("TaskDocument", fields: [relatedDocId], references: [id])
+  createdById   String
+  createdBy     Person     @relation("TaskCreator", fields: [createdById], references: [id])
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
+
+  assignments   TaskAssignment[]
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+}
+
+// ─── НАЗНАЧЕНИЕ ЗАДАЧИ (Task Assignment) ───
+model TaskAssignment {
+  id          String   @id @default(uuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  assigneeId  String
+  assignee    Person   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assignedById String
+  assignedBy  Person   @relation("TaskAssigner", fields: [assignedById], references: [id])
+  status      TaskAssignmentStatus @default(ASSIGNED)
+  comment     String?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([taskId, assigneeId])
+}
+
+enum TaskAssignmentStatus {
+  ASSIGNED
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+// ─── ИСПРАВЛЕНИЕ ДОКУМЕНТА (Document Correction) ───
+model DocumentCorrection {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation("DocumentCorrections", fields: [documentId], references: [id])
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  errorType     ErrorType
+  description   String
+  severity      ErrorSeverity @default(MEDIUM)
+  status        CorrectionStatus @default(OPEN)
+  assignedToId  String?
+  assignedTo    Person?  @relation("CorrectionAssignee", fields: [assignedToId], references: [id])
+  reportedById  String
+  reportedBy    Person   @relation("CorrectionReporter", fields: [reportedById], references: [id])
+  resolvedById  String?
+  resolvedBy    Person?  @relation("CorrectionResolver", fields: [resolvedById], references: [id])
+  resolution    String?
+  resolvedAt    DateTime?
+  dueDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  comments      CorrectionComment[]
+}
+
+enum ErrorType {
+  DATA_ERROR         // Ошибка в данных
+  FORMAT_ERROR       // Ошибка форматирования
+  MISSING_INFO       // Недостающая информация
+  WRONG_REFERENCE    // Неверная ссылка
+  SIGNATURE_ERROR    // Ошибка подписи
+  DATE_ERROR         // Ошибка даты
+  CALCULATION_ERROR  // Ошибка расчёта
+  OTHER
+}
+
+enum ErrorSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CorrectionStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  VERIFIED
+  CLOSED
+  REOPENED
+}
+
+// ─── КОММЕНТАРИЙ К ИСПРАВЛЕНИЮ ───
+model CorrectionComment {
+  id            String   @id @default(uuid())
+  correctionId  String
+  correction    DocumentCorrection @relation(fields: [correctionId], references: [id])
+  authorId      String
+  author        Person   @relation("CorrectionCommentAuthor", fields: [authorId], references: [id])
+  text          String
+  createdAt     DateTime @default(now())
+}
+
+// ─── ПРОГРЕСС ПРОЕКТА (Project Progress) ───
+model ProjectMilestone {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  title       String
+  description String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  status      MilestoneStatus @default(PENDING)
+  progress    Int      @default(0)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+  CANCELLED
 }
 
 // ─── КОМПЛЕКТ ИД (Package) ───

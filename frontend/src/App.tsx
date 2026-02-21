@@ -18,6 +18,12 @@ import Documents from './pages/Documents';
 import Materials from './pages/Materials';
 import Journals from './pages/Journals';
 import Packages from './pages/Packages';
+import Tasks from './pages/Tasks';
+import Corrections from './pages/Corrections';
+import ProjectProgress from './pages/ProjectProgress';
+import Team from './pages/Team';
+import Categories from './pages/Categories';
+import CustomTemplates from './pages/CustomTemplates';
 
 const antdLocales: Record<Language, typeof ruRU> = {
   ru: ruRU,
@@ -79,6 +85,12 @@ const App: React.FC = () => {
             <Route path="projects/:id/materials" element={<Materials />} />
             <Route path="projects/:id/journals" element={<Journals />} />
             <Route path="projects/:id/packages" element={<Packages />} />
+            <Route path="projects/:id/tasks" element={<Tasks />} />
+            <Route path="projects/:id/corrections" element={<Corrections />} />
+            <Route path="projects/:id/progress" element={<ProjectProgress />} />
+            <Route path="projects/:id/team" element={<Team />} />
+            <Route path="projects/:id/categories" element={<Categories />} />
+            <Route path="projects/:id/templates" element={<CustomTemplates />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
