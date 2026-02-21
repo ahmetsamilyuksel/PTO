@@ -291,6 +291,128 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
   }
 });
 
+// ─── GET /api/projects/:id/dashboard ───
+router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
+  try {
+    const projectId = req.params.id;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, name: true, code: true },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Проект не найден' });
+    }
+
+    const [
+      documentCounts,
+      materialsWithoutCerts,
+      pendingSignatures,
+      recentActivity,
+      overdueTasks,
+    ] = await Promise.all([
+      prisma.document.groupBy({
+        by: ['status'],
+        where: { projectId, deletedAt: null },
+        _count: { id: true },
+      }),
+      prisma.material.count({
+        where: {
+          projectId,
+          deletedAt: null,
+          certificates: { none: {} },
+        },
+      }),
+      prisma.documentSignature.findMany({
+        where: {
+          status: 'PENDING',
+          document: { projectId, deletedAt: null },
+        },
+        include: {
+          document: { select: { id: true, title: true, documentNumber: true, documentType: true } },
+          person: { select: { id: true, fio: true } },
+        },
+        take: 10,
+      }),
+      prisma.auditLog.findMany({
+        where: { entityType: { in: ['Document', 'Journal', 'Material', 'Task'] } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: {
+          performedBy: { select: { id: true, fio: true } },
+        },
+      }),
+      prisma.task.findMany({
+        where: {
+          projectId,
+          deletedAt: null,
+          status: { in: ['PENDING', 'IN_PROGRESS'] },
+          dueDate: { lt: new Date() },
+        },
+        select: { id: true, title: true, dueDate: true, priority: true },
+        take: 10,
+      }),
+    ]);
+
+    const docByStatus: Record<string, number> = {};
+    documentCounts.forEach((g) => { docByStatus[g.status] = g._count.id; });
+
+    const totalDocuments = Object.values(docByStatus).reduce((a, b) => a + b, 0);
+    const signedDocuments = (docByStatus['SIGNED'] || 0) + (docByStatus['IN_PACKAGE'] || 0);
+    const pendingDocuments = (docByStatus['PENDING_SIGNATURE'] || 0) + (docByStatus['IN_REVIEW'] || 0);
+
+    const attentionItems: any[] = [];
+
+    pendingSignatures.forEach((sig) => {
+      attentionItems.push({
+        type: 'pending_signature',
+        title: `Подпись: ${sig.document.documentNumber || sig.document.title}`,
+        description: `Ожидает подписи: ${sig.person.fio}`,
+        priority: 'medium',
+      });
+    });
+
+    if (materialsWithoutCerts > 0) {
+      attentionItems.push({
+        type: 'missing_cert',
+        title: `Материалы без сертификатов: ${materialsWithoutCerts}`,
+        description: 'Необходимо добавить сертификаты для входного контроля',
+        priority: 'high',
+      });
+    }
+
+    overdueTasks.forEach((task) => {
+      attentionItems.push({
+        type: 'overdue',
+        title: `Просрочена: ${task.title}`,
+        description: 'Срок истёк',
+        priority: task.priority === 'URGENT' ? 'high' : task.priority === 'HIGH' ? 'high' : 'medium',
+        dueDate: task.dueDate,
+      });
+    });
+
+    return res.json({
+      totalDocuments,
+      signedDocuments,
+      pendingDocuments,
+      missingCertificates: materialsWithoutCerts,
+      recentActivity: recentActivity.map((a) => ({
+        id: a.id,
+        entityType: a.entityType,
+        entityId: a.entityId,
+        action: a.action,
+        createdAt: a.createdAt,
+        user: a.performedBy ? { fullName: a.performedBy.fio } : null,
+      })),
+      attentionItems,
+    });
+  } catch (error) {
+    console.error('Project dashboard error:', error);
+    return res.status(500).json({ error: 'Ошибка при получении данных дашборда' });
+  }
+});
+
 // ─── PUT /api/projects/:id ───
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {

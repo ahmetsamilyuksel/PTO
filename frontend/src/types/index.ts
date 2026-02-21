@@ -533,3 +533,20 @@ export interface MatrixCell {
   documentId?: string;
   documentNumber?: string;
 }
+
+export interface AttentionItem {
+  type: 'pending_signature' | 'missing_cert' | 'upcoming_test' | 'overdue';
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  dueDate?: string;
+}
+
+export interface DashboardStats {
+  totalDocuments: number;
+  signedDocuments: number;
+  pendingDocuments: number;
+  missingCertificates: number;
+  recentActivity: (AuditLog & { user?: { fullName?: string } })[];
+  attentionItems: AttentionItem[];
+}

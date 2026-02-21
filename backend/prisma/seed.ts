@@ -73,7 +73,7 @@ async function main() {
     data: {
       fio: 'Юксель Ахмет Самиль',
       position: 'Инженер ПТО/ИТД',
-      role: UserRole.ENGINEER,
+      role: UserRole.ADMIN,
       email: 'ahmet@saela.ru',
       passwordHash,
       phone: '+7 (916) 111-22-33',
@@ -684,10 +684,294 @@ async function main() {
     ],
   });
 
+  // ─── Дополнительные документы ───
+
+  // Акт входного контроля бетона
+  const incomingControlDoc = await prisma.document.create({
+    data: {
+      projectId: project.id,
+      templateId: incomingControlTemplate.id,
+      documentType: DocumentType.INCOMING_CONTROL_ACT,
+      documentNumber: 'АВК-001',
+      title: 'Акт входного контроля — Бетон В25 F200 W8',
+      status: 'SIGNED',
+      locationId: building.id,
+      createdById: engineer.id,
+      documentDate: new Date('2024-06-15'),
+      lockedAt: new Date('2024-06-15'),
+      data: {
+        act_number: 'АВК-001',
+        act_date: '2024-06-15',
+        material_name: 'Бетон товарный В25 (М350) F200 W8',
+        manufacturer: 'ООО "МосБетон"',
+        batch_number: 'БП-2024/1156',
+        quantity: '90.0 м³',
+        cert_numbers: 'ПС-2024/1156',
+        visual_inspection: 'Подвижность смеси П4, однородная консистенция',
+        measurements: 'Температура +22°C, осадка конуса 18 см',
+        result: 'Принято',
+      },
+    },
+  });
+
+  await prisma.documentSignature.createMany({
+    data: [
+      { documentId: incomingControlDoc.id, personId: engineer.id, signRole: SignatureRole.PREPARED_BY, status: 'SIGNED', signedAt: new Date('2024-06-15'), sortOrder: 1 },
+      { documentId: incomingControlDoc.id, personId: techNadzor.id, signRole: SignatureRole.CLIENT_REP, status: 'SIGNED', signedAt: new Date('2024-06-15'), sortOrder: 2 },
+    ],
+  });
+
+  // Геодезический акт
+  await prisma.document.create({
+    data: {
+      projectId: project.id,
+      documentType: DocumentType.GEODETIC_ACT,
+      documentNumber: 'ГА-001',
+      title: 'Геодезический акт разбивки осей — Корпус 3',
+      status: 'SIGNED',
+      locationId: building.id,
+      createdById: engineer.id,
+      documentDate: new Date('2024-04-05'),
+      lockedAt: new Date('2024-04-06'),
+      data: {
+        act_number: 'ГА-001',
+        act_date: '2024-04-05',
+        description: 'Разбивка основных осей здания корпуса 3 в соответствии с проектом',
+      },
+    },
+  });
+
+  // Исполнительная схема (черновик)
+  await prisma.document.create({
+    data: {
+      projectId: project.id,
+      documentType: DocumentType.EXECUTIVE_DRAWING,
+      documentNumber: 'ИС-001',
+      title: 'Исполнительная схема армирования перекрытия 1 этажа',
+      status: 'IN_REVIEW',
+      locationId: floor1A.id,
+      workItemId: wiReinforcement1.id,
+      createdById: engineer.id,
+      documentDate: new Date('2024-06-14'),
+      data: {
+        description: 'Исполнительная схема армирования монолитного перекрытия 1 этажа, секция А',
+      },
+    },
+  });
+
+  // Протокол испытаний
+  await prisma.document.create({
+    data: {
+      projectId: project.id,
+      documentType: DocumentType.TEST_PROTOCOL,
+      documentNumber: 'ПИ-001',
+      title: 'Протокол испытаний бетона — контрольные кубы, 7 суток',
+      status: 'PENDING_SIGNATURE',
+      locationId: floor1A.id,
+      workItemId: wiConcrete1.id,
+      createdById: engineer.id,
+      documentDate: new Date('2024-06-23'),
+      data: {
+        test_type: 'Прочность на сжатие',
+        standard: 'ГОСТ 10180-2012',
+        result: 'Средняя прочность 24.8 МПа (71% от проектной)',
+        conclusion: 'Набор прочности соответствует нормативному графику',
+      },
+    },
+  });
+
+  // Дефектная ведомость
+  await prisma.document.create({
+    data: {
+      projectId: project.id,
+      documentType: DocumentType.DEFECT_LIST,
+      documentNumber: 'ДВ-001',
+      title: 'Дефектная ведомость — кладка 2 этажа',
+      status: 'DRAFT',
+      locationId: floor2A.id,
+      workItemId: wiMasonry2.id,
+      createdById: engineer.id,
+      documentDate: new Date('2024-07-10'),
+      data: {
+        defects: [
+          'Отклонение вертикальности кладки на оси 3/А-Б — 8 мм (допуск 10 мм)',
+          'Неполное заполнение горизонтальных швов на участке оси 2-3/В',
+        ],
+      },
+    },
+  });
+
+  // ─── Задачи (Tasks) ───
+  const task1 = await prisma.task.create({
+    data: {
+      projectId: project.id,
+      title: 'Подготовить АОСР на армирование 1 этажа',
+      description: 'Заполнить форму АОСР, приложить исполнительную схему и сертификаты на арматуру',
+      priority: 'HIGH',
+      status: 'IN_PROGRESS',
+      dueDate: new Date('2024-06-20'),
+      createdById: engineer.id,
+      relatedDocId: aosrDoc.id,
+    },
+  });
+
+  await prisma.taskAssignment.create({
+    data: {
+      taskId: task1.id,
+      assigneeId: engineer.id,
+      assignedById: siteChief.id,
+    },
+  });
+
+  const task2 = await prisma.task.create({
+    data: {
+      projectId: project.id,
+      title: 'Организовать испытания бетона (28 суток)',
+      description: 'Направить контрольные образцы в лабораторию для испытаний на 28 суток',
+      priority: 'MEDIUM',
+      status: 'PENDING',
+      dueDate: new Date('2024-07-14'),
+      createdById: siteChief.id,
+    },
+  });
+
+  await prisma.taskAssignment.create({
+    data: {
+      taskId: task2.id,
+      assigneeId: engineer.id,
+      assignedById: siteChief.id,
+    },
+  });
+
+  const task3 = await prisma.task.create({
+    data: {
+      projectId: project.id,
+      title: 'Проверить сертификаты на кирпич для кладки 2 этажа',
+      description: 'Запросить у поставщика сертификат соответствия и паспорт качества',
+      priority: 'HIGH',
+      status: 'PENDING',
+      dueDate: new Date('2024-06-25'),
+      createdById: engineer.id,
+    },
+  });
+
+  await prisma.taskAssignment.create({
+    data: {
+      taskId: task3.id,
+      assigneeId: engineer.id,
+      assignedById: engineer.id,
+    },
+  });
+
+  // ─── Вехи проекта (Milestones) ───
+  await prisma.projectMilestone.createMany({
+    data: [
+      {
+        projectId: project.id,
+        title: 'Фундамент и подземная часть',
+        description: 'Завершение работ по фундаменту и подземной автостоянке',
+        dueDate: new Date('2024-08-31'),
+        status: 'IN_PROGRESS',
+        progress: 65,
+        sortOrder: 1,
+      },
+      {
+        projectId: project.id,
+        title: 'Монолитный каркас (1-5 этажи)',
+        description: 'Возведение монолитного каркаса с 1 по 5 этаж',
+        dueDate: new Date('2024-12-31'),
+        status: 'IN_PROGRESS',
+        progress: 20,
+        sortOrder: 2,
+      },
+      {
+        projectId: project.id,
+        title: 'Монолитный каркас (6-12 этажи)',
+        description: 'Возведение монолитного каркаса с 6 по 12 этаж',
+        dueDate: new Date('2025-04-30'),
+        status: 'PENDING',
+        progress: 0,
+        sortOrder: 3,
+      },
+      {
+        projectId: project.id,
+        title: 'Монолитный каркас (13-17 этажи) + кровля',
+        description: 'Завершение каркаса и устройство кровли',
+        dueDate: new Date('2025-07-31'),
+        status: 'PENDING',
+        progress: 0,
+        sortOrder: 4,
+      },
+      {
+        projectId: project.id,
+        title: 'Фасад и внутренняя отделка',
+        description: 'Монтаж вентфасада, внутренняя отделка МОП',
+        dueDate: new Date('2025-10-31'),
+        status: 'PENDING',
+        progress: 0,
+        sortOrder: 5,
+      },
+      {
+        projectId: project.id,
+        title: 'Ввод в эксплуатацию',
+        description: 'Получение ЗОС, передача ИД заказчику',
+        dueDate: new Date('2025-12-31'),
+        status: 'PENDING',
+        progress: 0,
+        sortOrder: 6,
+      },
+    ],
+  });
+
+  // ─── Исправления документов (Corrections) ───
+  await prisma.documentCorrection.create({
+    data: {
+      documentId: aosrDoc.id,
+      projectId: project.id,
+      errorType: 'MISSING_INFO',
+      description: 'Не указан номер сертификата на арматуру в разделе "Применённые материалы"',
+      severity: 'MEDIUM',
+      status: 'OPEN',
+      assignedToId: engineer.id,
+      reportedById: techNadzor.id,
+      dueDate: new Date('2024-06-18'),
+    },
+  });
+
+  // ─── Дополнительные записи журнала ───
+  await prisma.journalEntry.create({
+    data: {
+      journalId: generalJournal.id,
+      entryNumber: 3,
+      entryDate: new Date('2024-06-16'),
+      weatherConditions: 'Ясно',
+      temperature: '+26°C',
+      crewInfo: 'Бригада бетонщиков — 8 чел., бригадир Кузнецов В.П.',
+      workDescription: 'Бетонирование монолитного перекрытия 1 этажа, секция А. Подача бетона автобетононасосом. Уплотнение глубинными вибраторами.',
+      materialsUsed: 'Бетон В25 F200 W8 — 85.5 м³ (партия БП-2024/1156)',
+      controlActions: 'Отбор контрольных образцов (3 куба). Контроль подвижности смеси — П4.',
+      notes: 'Бетонирование выполнено непрерывно с 07:00 до 16:30.',
+      authorId: siteChief.id,
+      locationId: floor1A.id,
+      workItemId: wiConcrete1.id,
+    },
+  });
+
+  // ─── Пользовательские категории ───
+  await prisma.customCategory.createMany({
+    data: [
+      { projectId: project.id, name: 'Акты скрытых работ', code: 'AOSR', description: 'Акты освидетельствования скрытых работ', sortOrder: 1 },
+      { projectId: project.id, name: 'Входной контроль', code: 'INCOMING', description: 'Документы входного контроля материалов', sortOrder: 2 },
+      { projectId: project.id, name: 'Журналы', code: 'JOURNALS', description: 'Специализированные журналы работ', sortOrder: 3 },
+      { projectId: project.id, name: 'Испытания', code: 'TESTS', description: 'Протоколы испытаний и лабораторных исследований', sortOrder: 4 },
+      { projectId: project.id, name: 'Переписка', code: 'CORR', description: 'Деловая переписка и письма', sortOrder: 5 },
+    ],
+  });
+
   console.log('Seed completed successfully!');
   console.log('---');
   console.log('Demo credentials:');
-  console.log('  Engineer: ahmet@saela.ru / password123');
+  console.log('  Admin/Engineer: ahmet@saela.ru / password123');
   console.log('  Site Chief: ivanov@saela.ru / password123');
   console.log('  Tech Supervisor: petrova@stroyinvest.ru / password123');
   console.log('  Author Supervisor: sidorov@proektburo.ru / password123');
