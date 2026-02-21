@@ -31,8 +31,8 @@ const Login: React.FC = () => {
       message.success(`Добро пожаловать, ${user.fullName}!`);
       navigate(from, { replace: true });
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Ошибка входа. Проверьте учётные данные.');
+      const err = error as { response?: { data?: { error?: string; message?: string } } };
+      message.error(err.response?.data?.error || err.response?.data?.message || 'Ошибка входа. Проверьте учётные данные.');
     } finally {
       setLoading(false);
     }
