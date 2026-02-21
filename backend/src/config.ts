@@ -11,7 +11,7 @@ export const config = {
     accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
     secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
     bucket: process.env.MINIO_BUCKET || 'pto-files',
-    useSSL: false,
+    useSSL: process.env.MINIO_USE_SSL === 'true',
   },
   upload: {
     maxFileSize: 50 * 1024 * 1024, // 50MB

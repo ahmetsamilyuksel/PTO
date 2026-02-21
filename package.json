@@ -1,0 +1,14 @@
+{
+  "name": "pto-docops",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Construction DocOps System (ПТО DocOps)",
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "postinstall": "cd backend && npm install && npx prisma generate",
+    "dev": "docker compose up --build"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  }
+}

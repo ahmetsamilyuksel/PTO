@@ -25,7 +25,12 @@ export const prisma = new PrismaClient();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.VERCEL === '1'
+    ? [/\.wornetpro\.life$/, /\.vercel\.app$/]
+    : '*',
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Public routes
@@ -33,7 +38,7 @@ app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', system: config.systemName });
+  res.json({ status: 'ok', system: config.systemName, env: process.env.NODE_ENV });
 });
 
 // Protected routes
@@ -55,21 +60,28 @@ app.use('/api/matrix', matrixRoutes);
 app.use('/api/attachments', attachmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-async function main() {
-  try {
-    await prisma.$connect();
-    console.log('Database connected');
+// Export app for Vercel serverless
+export default app;
+export { app };
 
-    await initMinIO();
-    console.log('MinIO initialized');
+// Only start listening when running locally (not on Vercel)
+if (!process.env.VERCEL) {
+  async function main() {
+    try {
+      await prisma.$connect();
+      console.log('Database connected');
 
-    app.listen(config.port, '0.0.0.0', () => {
-      console.log(`${config.systemName} backend running on port ${config.port}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+      await initMinIO();
+      console.log('MinIO initialized');
+
+      app.listen(config.port, '0.0.0.0', () => {
+        console.log(`${config.systemName} backend running on port ${config.port}`);
+      });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
   }
-}
 
-main();
+  main();
+}

@@ -9,5 +9,4 @@ coverage/
 tmp/
 uploads/
 *.tgz
-node_modules/
-package-lock.json
+.vercel
