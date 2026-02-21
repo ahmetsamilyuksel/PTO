@@ -104,6 +104,7 @@ router.post('/login', async (req: Request, res: Response) => {
         id: person.id,
         email: person.email,
         fio: person.fio,
+        fullName: person.fio,
         position: person.position,
         role: person.role,
         phone: person.phone,
