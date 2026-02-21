@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.env
+*.log
+.DS_Store
+coverage/
+.nyc_output/
+tmp/
+uploads/
+*.tgz
+node_modules/
+package-lock.json

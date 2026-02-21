@@ -1,0 +1,684 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ОРГАНИЗАЦИЯ (Organization / Taraf) ───
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   // Полное наименование
+  shortName String?  // Краткое наименование
+  inn       String?  // ИНН
+  kpp       String?  // КПП
+  ogrn      String?  // ОГРН
+  address   String?
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  persons           Person[]
+  projectsAsClient  Project[] @relation("ProjectClient")
+  projectsAsGeneral Project[] @relation("ProjectGeneral")
+  projectsAsSub     Project[] @relation("ProjectSub")
+  projectsAsDesign  Project[] @relation("ProjectDesign")
+  materialSupplies  Material[] @relation("MaterialSupplier")
+}
+
+// ─── ПЕРСОНАЛ (Person / Kişi) ───
+model Person {
+  id             String   @id @default(uuid())
+  fio            String   // ФИО
+  position       String?  // Должность
+  role           UserRole @default(ENGINEER)
+  email          String   @unique
+  passwordHash   String
+  phone          String?
+  sroNumber      String?  // Номер в реестре СРО
+  sroOrg         String?  // Наименование СРО
+  certificateInfo String? // Сертификаты/удостоверения
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  projectMembers  ProjectMember[]
+  documentSignatures DocumentSignature[]
+  journalEntries    JournalEntry[]
+  auditLogs         AuditLog[]
+  workflowTransitions WorkflowTransition[]
+  incomingControls    IncomingControl[]
+  createdDocuments    Document[] @relation("DocumentCreator")
+}
+
+enum UserRole {
+  ADMIN
+  PROJECT_MANAGER
+  SITE_MANAGER      // Прораб / начальник участка
+  ENGINEER          // Инженер ПТО/ИТД
+  TECH_SUPERVISOR   // Технадзор
+  AUTHOR_SUPERVISOR // Авторский надзор
+  LAB_TECHNICIAN    // Лаборант
+  SUPPLIER          // Поставщик
+  HSE_OFFICER       // ОТ/ПБ
+}
+
+// ─── ПРОЕКТ (Project) ───
+model Project {
+  id              String   @id @default(uuid())
+  name            String
+  code            String   @unique
+  address         String?
+  contractNumber  String?
+  contractDate    DateTime?
+  projectType     ProjectType @default(NEW_CONSTRUCTION)
+  startDate       DateTime?
+  plannedEndDate  DateTime?
+  normativeSet    String   @default("СП 48.13330.2019, РД-11-02-2006, РД 11-05-2007")
+  documentLang    String   @default("RU")
+  description     String?
+  status          ProjectStatus @default(ACTIVE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  clientOrgId     String?
+  clientOrg       Organization? @relation("ProjectClient", fields: [clientOrgId], references: [id])
+  generalOrgId    String?
+  generalOrg      Organization? @relation("ProjectGeneral", fields: [generalOrgId], references: [id])
+  subOrgId        String?
+  subOrg          Organization? @relation("ProjectSub", fields: [subOrgId], references: [id])
+  designOrgId     String?
+  designOrg       Organization? @relation("ProjectDesign", fields: [designOrgId], references: [id])
+
+  members         ProjectMember[]
+  locations       Location[]
+  workItems       WorkItem[]
+  documents       Document[]
+  materials       Material[]
+  journals        Journal[]
+  packages        Package[]
+  documentMatrixRules DocumentMatrixRule[]
+}
+
+enum ProjectType {
+  NEW_CONSTRUCTION    // Новое строительство
+  RECONSTRUCTION      // Реконструкция
+  CAPITAL_REPAIR      // Капитальный ремонт
+  INTERIOR_FINISHING  // Внутренняя отделка
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  ARCHIVED
+}
+
+// ─── УЧАСТНИК ПРОЕКТА (Project Member) ───
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  personId  String
+  person    Person   @relation(fields: [personId], references: [id])
+  projectRole ProjectMemberRole
+  canSign   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, personId, projectRole])
+}
+
+enum ProjectMemberRole {
+  RESPONSIBLE_PRODUCER  // Ответственный производитель работ
+  SITE_CHIEF            // Начальник участка
+  QA_ENGINEER           // Инженер ПТО/ИТД
+  TECH_SUPERVISOR_REP   // Представитель технадзора
+  AUTHOR_SUPERVISOR_REP // Представитель авторского надзора
+  HSE_RESPONSIBLE       // Ответственный за ОТ/ПБ
+  OTHER
+}
+
+// ─── ЛОКАЦИЯ / ЗОНА (Location/Zone) ───
+model Location {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  parentId    String?
+  parent      Location? @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    Location[] @relation("LocationHierarchy")
+  name        String   // Блок А, Этаж 3, Секция 2, Ось А-Б/1-3
+  locationType LocationType
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  workItems   WorkItem[]
+  documents   Document[]
+  materials   Material[]
+  journalEntries JournalEntry[]
+}
+
+enum LocationType {
+  BUILDING   // Здание / Корпус
+  SECTION    // Секция / Блок
+  FLOOR      // Этаж
+  ROOM       // Помещение / Квартира
+  ZONE       // Зона
+  AXIS       // Оси
+}
+
+// ─── РАБОЧИЙ ЭЛЕМЕНТ / WBS (Work Item) ───
+model WorkItem {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id])
+  parentId    String?
+  parent      WorkItem? @relation("WorkItemHierarchy", fields: [parentId], references: [id])
+  children    WorkItem[] @relation("WorkItemHierarchy")
+  code        String   // WBS код
+  name        String
+  workType    WorkType
+  description String?
+  unit        String?  // ед. изм.
+  quantity    Float?
+  sortOrder   Int      @default(0)
+  status      WorkItemStatus @default(NOT_STARTED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  documents   Document[]
+  materialUsages MaterialUsage[]
+  journalEntries JournalEntry[]
+  testProtocols TestProtocol[]
+}
+
+enum WorkType {
+  CONCRETE        // Бетонные работы
+  REINFORCEMENT   // Арматурные работы
+  STEEL_STRUCTURE // Металлоконструкции
+  MASONRY         // Кладочные работы
+  WATERPROOFING   // Гидроизоляция
+  INSULATION      // Теплоизоляция
+  ROOFING         // Кровельные работы
+  PLASTERING      // Штукатурные работы
+  PAINTING        // Малярные работы
+  TILING          // Плиточные работы
+  FLOORING        // Устройство полов
+  HVAC            // ОВиК
+  PLUMBING        // ВК (водоснабжение/канализация)
+  ELECTRICAL      // ЭОМ
+  FIRE_PROTECTION // Противопожарные системы
+  LOW_VOLTAGE     // Слаботочные системы
+  GEODETIC        // Геодезические работы
+  EARTHWORK       // Земляные работы
+  FOUNDATION      // Фундаментные работы
+  OTHER
+}
+
+enum WorkItemStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ACCEPTED
+}
+
+// ─── МАТЕРИАЛ (Material) ───
+model Material {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  name          String   // Наименование материала
+  brand         String?  // Марка
+  manufacturer  String?  // Производитель
+  batchNumber   String?  // Номер партии / лота
+  quantity      Float?
+  unit          String?  // ед. изм.
+  arrivalDate   DateTime?
+  deliveryNote  String?  // Номер накладной
+  supplierId    String?
+  supplier      Organization? @relation("MaterialSupplier", fields: [supplierId], references: [id])
+  locationId    String?
+  storageLocation Location? @relation(fields: [locationId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  certificates  MaterialCertificate[]
+  incomingControls IncomingControl[]
+  usages        MaterialUsage[]
+}
+
+// ─── СЕРТИФИКАТ МАТЕРИАЛА ───
+model MaterialCertificate {
+  id           String   @id @default(uuid())
+  materialId   String
+  material     Material @relation(fields: [materialId], references: [id])
+  certType     CertificateType
+  certNumber   String?
+  issueDate    DateTime?
+  expiryDate   DateTime?
+  issuedBy     String?  // Кем выдан
+  filePath     String?  // Путь к файлу в хранилище
+  fileName     String?
+  fileSize     Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum CertificateType {
+  PASSPORT          // Паспорт
+  CONFORMITY_CERT   // Сертификат соответствия
+  DECLARATION        // Декларация о соответствии
+  TEST_REPORT       // Протокол испытаний
+  QUALITY_CERT      // Сертификат качества
+  FIRE_CERT         // Сертификат пожарной безопасности
+  SANITARY_CERT     // Санитарно-эпидемиологическое заключение
+  OTHER
+}
+
+// ─── ВХОДНОЙ КОНТРОЛЬ (Incoming Control) ───
+model IncomingControl {
+  id           String   @id @default(uuid())
+  materialId   String
+  material     Material @relation(fields: [materialId], references: [id])
+  controlDate  DateTime @default(now())
+  inspectorId  String
+  inspector    Person   @relation(fields: [inspectorId], references: [id])
+  result       ControlResult
+  visualCheck  String?  // Результат визуального осмотра
+  measurements String?  // Результаты замеров
+  notes        String?
+  photos       Attachment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum ControlResult {
+  ACCEPTED      // Принято
+  REJECTED      // Отклонено
+  CONDITIONALLY_ACCEPTED // Принято условно
+}
+
+// ─── ИСПОЛЬЗОВАНИЕ МАТЕРИАЛА (Material → WorkItem link) ───
+model MaterialUsage {
+  id         String   @id @default(uuid())
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id])
+  workItemId String
+  workItem   WorkItem @relation(fields: [workItemId], references: [id])
+  quantity   Float?
+  unit       String?
+  usedDate   DateTime?
+  createdAt  DateTime @default(now())
+
+  @@unique([materialId, workItemId])
+}
+
+// ─── ДОКУМЕНТ (Document) ───
+model Document {
+  id              String   @id @default(uuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id])
+  templateId      String?
+  template        DocumentTemplate? @relation(fields: [templateId], references: [id])
+  documentType    DocumentType
+  documentNumber  String?  // Номер документа
+  title           String
+  status          DocumentStatus @default(DRAFT)
+  revision        Int      @default(1)
+  parentDocId     String?  // Если это ревизия, ссылка на оригинал
+  parentDoc       Document? @relation("DocumentRevisions", fields: [parentDocId], references: [id])
+  revisions       Document[] @relation("DocumentRevisions")
+  locationId      String?
+  location        Location? @relation(fields: [locationId], references: [id])
+  workItemId      String?
+  workItem        WorkItem? @relation(fields: [workItemId], references: [id])
+  data            Json?    // Данные формы (JSON)
+  filePath        String?  // Сгенерированный файл
+  fileName        String?
+  createdById     String
+  createdBy       Person   @relation("DocumentCreator", fields: [createdById], references: [id])
+  documentDate    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+  lockedAt        DateTime? // Блокировка после подписания
+
+  signatures      DocumentSignature[]
+  attachments     Attachment[]
+  journalLinks    JournalEntryDocLink[]
+  packageItems    PackageItem[]
+  workflowHistory WorkflowTransition[]
+}
+
+enum DocumentType {
+  // Начало / Мобилизация
+  SITE_HANDOVER          // Акт передачи строительной площадки
+  ASSIGNMENT_ORDER       // Приказ о назначении ответственных
+  HSE_BRIEFING           // Журнал инструктажей по ОТ
+  PPR_UPLOAD             // ППР / технологическая карта
+  KICKOFF_PROTOCOL       // Протокол стартового совещания
+
+  // Производство (ИД ядро)
+  AOSR                   // Акт освидетельствования скрытых работ
+  AOOK                   // Акт освид. ответственных конструкций
+  NETWORK_ACT            // Акт освид. участков сетей инж.-тех. обеспечения
+  GEODETIC_ACT           // Геодезический акт
+  EXECUTIVE_DRAWING      // Исполнительная схема
+
+  // Материалы
+  INCOMING_CONTROL_ACT   // Акт входного контроля
+  MATERIAL_CERTIFICATE   // Паспорт / сертификат материала
+
+  // Тесты
+  TEST_PROTOCOL          // Протокол испытаний
+
+  // Завершение
+  INTERIM_ACCEPTANCE     // Акт промежуточной приёмки
+  DEFECT_LIST            // Дефектная ведомость
+  COMPLETION_ACT         // Акт приёмки выполненных работ
+  ID_HANDOVER            // Акт передачи комплекта ИД
+
+  // Прочее
+  CORRESPONDENCE         // Переписка / письма
+  OTHER
+}
+
+enum DocumentStatus {
+  DRAFT             // Черновик
+  IN_REVIEW         // На проверке
+  REVISION_REQUESTED // Возврат на доработку
+  PENDING_SIGNATURE  // На подписи
+  SIGNED            // Подписан
+  ARCHIVED          // В архиве
+  IN_PACKAGE        // Включён в комплект
+}
+
+// ─── ШАБЛОН ДОКУМЕНТА (Document Template) ───
+model DocumentTemplate {
+  id            String   @id @default(uuid())
+  name          String
+  documentType  DocumentType
+  description   String?
+  filePath      String   // Путь к шаблону .docx
+  version       Int      @default(1)
+  isActive      Boolean  @default(true)
+  fields        Json?    // Описание полей шаблона
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  documents     Document[]
+}
+
+// ─── ПОДПИСЬ / СОГЛАСОВАНИЕ (Document Signature) ───
+model DocumentSignature {
+  id          String   @id @default(uuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id])
+  personId    String
+  person      Person   @relation(fields: [personId], references: [id])
+  signRole    SignatureRole
+  status      SignatureStatus @default(PENDING)
+  signedAt    DateTime?
+  comment     String?
+  stampData   Json?    // QR код + данные для PDF штампа
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum SignatureRole {
+  PREPARED_BY    // Подготовил
+  CHECKED_BY     // Проверил
+  APPROVED_BY    // Утвердил
+  CONTRACTOR     // Подрядчик
+  CLIENT_REP     // Представитель заказчика
+  TECH_SUPERVISOR // Технадзор
+  AUTHOR_SUPERVISOR // Авторский надзор
+}
+
+enum SignatureStatus {
+  PENDING
+  SIGNED
+  REJECTED
+  DELEGATED
+}
+
+// ─── ЖУРНАЛ (Journal) ───
+model Journal {
+  id          String      @id @default(uuid())
+  projectId   String
+  project     Project     @relation(fields: [projectId], references: [id])
+  journalType JournalType
+  title       String
+  startDate   DateTime?
+  endDate     DateTime?
+  status      JournalStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  entries     JournalEntry[]
+}
+
+enum JournalType {
+  GENERAL           // Общий журнал работ
+  CONCRETE          // Журнал бетонных работ
+  WELDING           // Журнал сварочных работ
+  ANTICORROSION     // Журнал антикоррозионных работ
+  INSULATION        // Журнал изоляционных работ
+  PILE_DRIVING      // Журнал забивки свай
+  GEODETIC          // Журнал геодезических работ
+  INSTALLATION      // Журнал монтажных работ
+  OTHER
+}
+
+enum JournalStatus {
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+// ─── ЗАПИСЬ ЖУРНАЛА (Journal Entry) ───
+model JournalEntry {
+  id              String   @id @default(uuid())
+  journalId       String
+  journal         Journal  @relation(fields: [journalId], references: [id])
+  entryNumber     Int
+  entryDate       DateTime
+  weatherConditions String? // Погодные условия
+  temperature     String?  // Температура
+  crewInfo        String?  // Состав бригады
+  workDescription String   // Описание выполненных работ
+  materialsUsed   String?  // Использованные материалы
+  controlActions  String?  // Выполненный контроль
+  notes           String?
+  authorId        String
+  author          Person   @relation(fields: [authorId], references: [id])
+  locationId      String?
+  location        Location? @relation(fields: [locationId], references: [id])
+  workItemId      String?
+  workItem        WorkItem? @relation(fields: [workItemId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  documentLinks   JournalEntryDocLink[]
+  attachments     Attachment[]
+}
+
+// ─── СВЯЗЬ ЖУРНАЛ-ДОКУМЕНТ ───
+model JournalEntryDocLink {
+  id             String       @id @default(uuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id])
+  documentId     String
+  document       Document     @relation(fields: [documentId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@unique([journalEntryId, documentId])
+}
+
+// ─── ПРОТОКОЛ ИСПЫТАНИЙ (Test Protocol) ───
+model TestProtocol {
+  id              String   @id @default(uuid())
+  projectId       String
+  workItemId      String?
+  workItem        WorkItem? @relation(fields: [workItemId], references: [id])
+  testType        String   // Тип испытания
+  protocolNumber  String?
+  testDate        DateTime
+  equipment       String?  // Оборудование
+  calibrationInfo String?  // Калибровка
+  standard        String?  // Стандарт / ГОСТ
+  result          String   // Результат
+  acceptanceCriteria String? // Критерии приёмки
+  passed          Boolean
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  attachments     Attachment[]
+}
+
+// ─── ВЛОЖЕНИЯ (Attachment) ───
+model Attachment {
+  id                String   @id @default(uuid())
+  fileName          String
+  originalName      String
+  filePath          String   // Путь в хранилище
+  mimeType          String?
+  fileSize          Int?
+  description       String?
+  category          AttachmentCategory @default(OTHER)
+  // Полиморфные связи
+  documentId        String?
+  document          Document? @relation(fields: [documentId], references: [id])
+  journalEntryId    String?
+  journalEntry      JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  testProtocolId    String?
+  testProtocol      TestProtocol? @relation(fields: [testProtocolId], references: [id])
+  incomingControlId String?
+  incomingControl   IncomingControl? @relation(fields: [incomingControlId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum AttachmentCategory {
+  PHOTO
+  DRAWING
+  CERTIFICATE
+  PROTOCOL
+  SCHEME
+  CORRESPONDENCE
+  OTHER
+}
+
+// ─── ПЕРЕХОД РАБОЧЕГО ПРОЦЕССА (Workflow Transition) ───
+model WorkflowTransition {
+  id          String   @id @default(uuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id])
+  fromStatus  DocumentStatus
+  toStatus    DocumentStatus
+  performedById String
+  performedBy Person   @relation(fields: [performedById], references: [id])
+  comment     String?
+  changedFields Json?  // Какие поля изменились
+  createdAt   DateTime @default(now())
+}
+
+// ─── АУДИТ ЛОГ ───
+model AuditLog {
+  id          String   @id @default(uuid())
+  entityType  String   // Тип сущности
+  entityId    String   // ID сущности
+  action      AuditAction
+  performedById String?
+  performedBy Person?  @relation(fields: [performedById], references: [id])
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  SIGN
+  REJECT
+  EXPORT
+  PACKAGE
+}
+
+// ─── КОМПЛЕКТ ИД (Package) ───
+model Package {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  name        String
+  description String?
+  periodFrom  DateTime?
+  periodTo    DateTime?
+  status      PackageStatus @default(DRAFT)
+  filePath    String?  // Путь к ZIP файлу
+  opisPath    String?  // Путь к описи
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       PackageItem[]
+}
+
+enum PackageStatus {
+  DRAFT
+  GENERATING
+  READY
+  DELIVERED
+}
+
+// ─── ЭЛЕМЕНТ КОМПЛЕКТА ───
+model PackageItem {
+  id          String   @id @default(uuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id])
+  folderPath  String   // Папка внутри комплекта
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([packageId, documentId])
+}
+
+// ─── ПРАВИЛО МАТРИЦЫ ДОКУМЕНТОВ ───
+model DocumentMatrixRule {
+  id              String   @id @default(uuid())
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id])
+  workType        WorkType
+  documentType    DocumentType
+  triggerEvent    String    // Событие-триггер
+  preparedByRole  ProjectMemberRole
+  checkedByRole   ProjectMemberRole?
+  signedByRoles   Json      // Массив ролей для подписи
+  requiredAttachments Json? // Список обязательных вложений
+  requiredFields  Json?     // Обязательные поля
+  linkedJournalType JournalType? // Связанный журнал
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
