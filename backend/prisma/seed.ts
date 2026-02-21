@@ -4,6 +4,13 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Check if already seeded
+  const existingUser = await prisma.person.findUnique({ where: { email: 'ahmet@saela.ru' } });
+  if (existingUser) {
+    console.log('Database already seeded, skipping...');
+    return;
+  }
+
   console.log('Seeding database...');
 
   // ─── Организации ───

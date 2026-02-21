@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install && cd backend && npm install && npx prisma generate && cd ../frontend && npm install",
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd backend && npx prisma migrate deploy && npx tsx prisma/seed.ts && cd ../frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.ts": {
@@ -11,8 +11,5 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
