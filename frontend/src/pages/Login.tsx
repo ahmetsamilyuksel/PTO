@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type { LoginResponse } from '../types';
 
 const { Title, Text } = Typography;
@@ -31,8 +31,7 @@ const Login: React.FC = () => {
       message.success(`Добро пожаловать, ${user.fullName}!`);
       navigate(from, { replace: true });
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string; message?: string } } };
-      message.error(err.response?.data?.error || err.response?.data?.message || 'Ошибка входа. Проверьте учётные данные.');
+      message.error(getApiError(error, 'Ошибка входа. Проверьте учётные данные.'));
     } finally {
       setLoading(false);
     }

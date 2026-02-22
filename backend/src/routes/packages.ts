@@ -36,7 +36,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: packages, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List packages error:', error);
-    return res.status(500).json({ error: 'Error fetching package list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching package list: ${detail}` });
   }
 });
 
@@ -74,7 +75,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(pkg);
   } catch (error) {
     console.error('Get package error:', error);
-    return res.status(500).json({ error: 'Error fetching package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching package: ${detail}` });
   }
 });
 
@@ -106,7 +108,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(pkg);
   } catch (error) {
     console.error('Create package error:', error);
-    return res.status(500).json({ error: 'Error creating package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating package: ${detail}` });
   }
 });
 

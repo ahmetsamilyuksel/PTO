@@ -31,7 +31,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch categories: ${detail}` });
   }
 });
 
@@ -60,7 +61,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.json(category);
   } catch (error) {
     console.error('Error fetching category:', error);
-    res.status(500).json({ error: 'Failed to fetch category' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch category: ${detail}` });
   }
 });
 
@@ -86,11 +88,12 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json(category);
   } catch (error: any) {
-    if (error.code === 'P2002') {
+    if ((error as any)?.code === 'P2002') {
       return res.status(409).json({ error: 'Category code already exists in this project' });
     }
     console.error('Error creating category:', error);
-    res.status(500).json({ error: 'Failed to create category' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create category: ${detail}` });
   }
 });
 
@@ -98,6 +101,11 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { name, code, description, parentId, sortOrder, isActive } = req.body;
+
+    const existing = await prisma.customCategory.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
 
     const category = await prisma.customCategory.update({
       where: { id: req.params.id },
@@ -114,13 +122,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(category);
   } catch (error) {
     console.error('Error updating category:', error);
-    res.status(500).json({ error: 'Failed to update category' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update category: ${detail}` });
   }
 });
 
 // DELETE /api/categories/:id (soft delete)
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.customCategory.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
     await prisma.customCategory.update({
       where: { id: req.params.id },
       data: { deletedAt: new Date() },
@@ -129,7 +143,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json({ message: 'Category deleted' });
   } catch (error) {
     console.error('Error deleting category:', error);
-    res.status(500).json({ error: 'Failed to delete category' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to delete category: ${detail}` });
   }
 });
 

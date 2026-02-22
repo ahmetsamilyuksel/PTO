@@ -49,7 +49,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: attachments });
   } catch (error) {
     console.error('List attachments error:', error);
-    return res.status(500).json({ error: 'Error fetching attachments list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching attachments list: ${detail}` });
   }
 });
 
@@ -67,7 +68,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(attachment);
   } catch (error) {
     console.error('Get attachment error:', error);
-    return res.status(500).json({ error: 'Error fetching attachment' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching attachment: ${detail}` });
   }
 });
 
@@ -88,7 +90,8 @@ router.get('/:id/url', async (req: AuthRequest, res: Response) => {
     return res.json({ url, expiresIn: expiry });
   } catch (error) {
     console.error('Get attachment URL error:', error);
-    return res.status(500).json({ error: 'Error fetching file URL' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching file URL: ${detail}` });
   }
 });
 
@@ -112,7 +115,8 @@ router.get('/:id/download', async (req: AuthRequest, res: Response) => {
     return res.send(buffer);
   } catch (error) {
     console.error('Download attachment error:', error);
-    return res.status(500).json({ error: 'Error downloading file' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error downloading file: ${detail}` });
   }
 });
 
@@ -199,7 +203,8 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
       return res.status(400).json({ error: error.message });
     }
     console.error('Upload attachment error:', error);
-    return res.status(500).json({ error: 'Error uploading file' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error uploading file: ${detail}` });
   }
 });
 
@@ -256,7 +261,8 @@ router.post('/upload-multiple', upload.array('files', 10), async (req: AuthReque
     return res.status(201).json({ data: attachments, count: attachments.length });
   } catch (error) {
     console.error('Upload multiple attachments error:', error);
-    return res.status(500).json({ error: 'Error uploading files' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error uploading files: ${detail}` });
   }
 });
 
@@ -281,7 +287,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(attachment);
   } catch (error) {
     console.error('Update attachment error:', error);
-    return res.status(500).json({ error: 'Error updating attachment' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating attachment: ${detail}` });
   }
 });
 
@@ -314,7 +321,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Attachment deleted' });
   } catch (error) {
     console.error('Delete attachment error:', error);
-    return res.status(500).json({ error: 'Error deleting attachment' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting attachment: ${detail}` });
   }
 });
 

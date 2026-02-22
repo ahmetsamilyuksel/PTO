@@ -70,8 +70,8 @@ const Journals: React.FC = () => {
       const response = await apiClient.get('/journals', { params: { projectId } });
       const data = response.data;
       setJournals(data.data || data || []);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setLoading(false);
     }
@@ -92,8 +92,8 @@ const Journals: React.FC = () => {
       setEntries(eData.data || eData || []);
       setEntriesTotal(eData.total || 0);
       setEntriesPage(1);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setDetailLoading(false);
     }
@@ -106,8 +106,8 @@ const Journals: React.FC = () => {
       setEntries(data.data || data || []);
       setEntriesTotal(data.total || 0);
       setEntriesPage(pg);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -169,8 +169,8 @@ const Journals: React.FC = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 

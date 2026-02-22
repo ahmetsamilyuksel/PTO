@@ -65,7 +65,8 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(201).json({ token, user: person });
   } catch (error) {
     console.error('Register error:', error);
-    return res.status(500).json({ error: 'Error during registration' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error during registration: ${detail}` });
   }
 });
 
@@ -113,7 +114,8 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Error during login' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error during login: ${detail}` });
   }
 });
 
@@ -155,7 +157,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Me error:', error);
-    return res.status(500).json({ error: 'Error fetching profile' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching profile: ${detail}` });
   }
 });
 
@@ -191,7 +194,8 @@ router.put('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     return res.json(person);
   } catch (error) {
     console.error('Update profile error:', error);
-    return res.status(500).json({ error: 'Error updating profile' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating profile: ${detail}` });
   }
 });
 
@@ -227,7 +231,8 @@ router.put('/change-password', authMiddleware, async (req: AuthRequest, res: Res
     return res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    return res.status(500).json({ error: 'Error changing password' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error changing password: ${detail}` });
   }
 });
 

@@ -9,7 +9,7 @@ import {
   EditOutlined, TeamOutlined, MailOutlined, PhoneOutlined,
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { Text, Title } = Typography;
@@ -41,7 +41,9 @@ const Team: React.FC = () => {
     try {
       const res = await apiClient.get('/team', { params: { projectId } });
       setMembers(res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 
@@ -49,14 +51,18 @@ const Team: React.FC = () => {
     try {
       const res = await apiClient.get('/team/available', { params: { projectId } });
       setAvailablePersons(res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const fetchOrganizations = async () => {
     try {
       const res = await apiClient.get('/organizations');
       setOrganizations(res.data?.data || res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const handleAddExisting = async (values: any) => {
@@ -71,8 +77,9 @@ const Team: React.FC = () => {
       setAddExistingVisible(false);
       addForm.resetFields();
       fetchMembers();
-    } catch (err: any) {
-      message.error(err.response?.data?.error || t.app.error);
+    } catch (error: unknown) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -94,8 +101,9 @@ const Team: React.FC = () => {
       setCreateNewVisible(false);
       createForm.resetFields();
       fetchMembers();
-    } catch (err: any) {
-      message.error(err.response?.data?.error || t.app.error);
+    } catch (error: unknown) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -111,8 +119,8 @@ const Team: React.FC = () => {
       setEditMember(null);
       editForm.resetFields();
       fetchMembers();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -121,8 +129,8 @@ const Team: React.FC = () => {
       await apiClient.delete(`/team/${memberId}`);
       message.success(t.app.success);
       fetchMembers();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 

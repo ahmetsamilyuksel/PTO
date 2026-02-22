@@ -59,7 +59,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(templates);
   } catch (error) {
     console.error('Error fetching custom templates:', error);
-    res.status(500).json({ error: 'Failed to fetch custom templates' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch custom templates: ${detail}` });
   }
 });
 
@@ -87,7 +88,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.json(template);
   } catch (error) {
     console.error('Error fetching template:', error);
-    res.status(500).json({ error: 'Failed to fetch template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch template: ${detail}` });
   }
 });
 
@@ -147,7 +149,8 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
       return res.status(400).json({ error: error.message });
     }
     console.error('Error creating template:', error);
-    res.status(500).json({ error: 'Failed to create template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create template: ${detail}` });
   }
 });
 
@@ -155,6 +158,11 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { name, description, documentType, categoryId, fields, format, isActive } = req.body;
+
+    const existing = await prisma.customTemplate.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
 
     const template = await prisma.customTemplate.update({
       where: { id: req.params.id },
@@ -172,13 +180,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(template);
   } catch (error) {
     console.error('Error updating template:', error);
-    res.status(500).json({ error: 'Failed to update template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update template: ${detail}` });
   }
 });
 
 // DELETE /api/custom-templates/:id
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.customTemplate.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
     await prisma.customTemplate.update({
       where: { id: req.params.id },
       data: { deletedAt: new Date() },
@@ -187,7 +201,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json({ message: 'Template deleted' });
   } catch (error) {
     console.error('Error deleting template:', error);
-    res.status(500).json({ error: 'Failed to delete template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to delete template: ${detail}` });
   }
 });
 

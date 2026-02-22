@@ -31,7 +31,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import type { DataNode } from 'antd/es/tree';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type { Organization, Person, ProjectType, OrgRole, PersonRole } from '../types';
 
 const { Title, Text } = Typography;
@@ -352,8 +352,8 @@ const ProjectSetup: React.FC = () => {
       message.success('Проект успешно создан!');
       navigate(`/projects/${response.data.id}`);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Ошибка при создании проекта');
+      const msg = getApiError(error, 'Ошибка при создании проекта');
+      if (msg) message.error(msg);
     } finally {
       setLoading(false);
     }
