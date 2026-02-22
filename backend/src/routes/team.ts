@@ -1,11 +1,12 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { prisma } from '../index';
+import { AuthRequest } from '../middleware/auth';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
 
 // GET /api/team?projectId=...
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const { projectId } = req.query;
     if (!projectId) {
@@ -42,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/team/available?projectId=... - People not yet in project
-router.get('/available', async (req: Request, res: Response) => {
+router.get('/available', async (req: AuthRequest, res: Response) => {
   try {
     const { projectId } = req.query;
     if (!projectId) {
@@ -82,7 +83,7 @@ router.get('/available', async (req: Request, res: Response) => {
 });
 
 // POST /api/team/add-member
-router.post('/add-member', async (req: Request, res: Response) => {
+router.post('/add-member', async (req: AuthRequest, res: Response) => {
   try {
     const { projectId, personId, projectRole, canSign } = req.body;
 
@@ -125,7 +126,7 @@ router.post('/add-member', async (req: Request, res: Response) => {
 });
 
 // POST /api/team/create-and-add - Create a new user and add to project
-router.post('/create-and-add', async (req: Request, res: Response) => {
+router.post('/create-and-add', async (req: AuthRequest, res: Response) => {
   try {
     const { projectId, fio, email, position, role, phone, projectRole, canSign, organizationId, password } = req.body;
 
@@ -186,7 +187,7 @@ router.post('/create-and-add', async (req: Request, res: Response) => {
 });
 
 // PUT /api/team/:memberId
-router.put('/:memberId', async (req: Request, res: Response) => {
+router.put('/:memberId', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.projectMember.findUnique({ where: { id: req.params.memberId } });
     if (!existing) {
@@ -223,7 +224,7 @@ router.put('/:memberId', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/team/:memberId
-router.delete('/:memberId', async (req: Request, res: Response) => {
+router.delete('/:memberId', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.projectMember.findUnique({ where: { id: req.params.memberId } });
     if (!existing) {
