@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type {
   Material, MaterialStatus, MaterialCertificate, IncomingControl,
   CertificateType, InspectionResult, WorkItem,
@@ -35,12 +35,14 @@ const Materials: React.FC = () => {
   };
 
   const certTypeLabels: Record<string, string> = {
-    QUALITY_PASSPORT: t.material?.certTypes?.PASSPORT || 'Pasaport',
+    PASSPORT: t.material?.certTypes?.PASSPORT || 'Pasaport',
     CONFORMITY_CERT: t.material?.certTypes?.CONFORMITY_CERT || 'Uygunluk Sertifikası',
+    DECLARATION: t.material?.certTypes?.CONFORMITY_CERT || 'Uygunluk Beyanı',
     TEST_REPORT: t.material?.certTypes?.TEST_REPORT || 'Test Raporu',
-    FIRE_SAFETY_CERT: t.material?.certTypes?.FIRE_CERT || 'Yangın Sertifikası',
+    QUALITY_CERT: t.material?.certTypes?.QUALITY_CERT || 'Kalite Sertifikası',
+    FIRE_CERT: t.material?.certTypes?.FIRE_CERT || 'Yangın Sertifikası',
     SANITARY_CERT: t.material?.certTypes?.SANITARY_CERT || 'Sağlık Belgesi',
-    MANUFACTURER_CERT: t.material?.certTypes?.QUALITY_CERT || 'Üretici Sertifikası',
+    OTHER: t.journal?.types?.OTHER || 'Diğer',
   };
 
   const controlResultLabels: Record<string, { color: string; label: string }> = {
@@ -106,16 +108,17 @@ const Materials: React.FC = () => {
       await apiClient.post('/materials', {
         projectId, name: values.name, brand: values.brand,
         manufacturer: values.manufacturer, batchNumber: values.batchNumber,
-        supplier: values.supplier, quantity: values.quantity, unit: values.unit,
+        quantity: values.quantity, unit: values.unit,
         arrivalDate: values.arrivalDate?.format('YYYY-MM-DD'),
+        deliveryNote: values.supplier,
       });
       message.success(t.app.success);
       setCreateModalVisible(false);
       createForm.resetFields();
       fetchMaterials();
     } catch (error: unknown) {
-      const err = error as { errorFields?: unknown };
-      if (!err.errorFields) message.error(t.app.error);
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setCreateLoading(false);
     }
@@ -127,7 +130,9 @@ const Materials: React.FC = () => {
       const values = await certForm.validateFields();
       setCertLoading(true);
       await apiClient.post(`/materials/${selectedMaterial.id}/certificates`, {
-        ...values,
+        certType: values.type,
+        certNumber: values.number,
+        issuedBy: values.issuer,
         issueDate: values.issueDate?.format('YYYY-MM-DD'),
         expiryDate: values.expiryDate?.format('YYYY-MM-DD'),
       });
@@ -136,8 +141,8 @@ const Materials: React.FC = () => {
       certForm.resetFields();
       openDetail(selectedMaterial.id);
     } catch (error: unknown) {
-      const err = error as { errorFields?: unknown };
-      if (!err.errorFields) message.error(t.app.error);
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setCertLoading(false);
     }
@@ -149,16 +154,19 @@ const Materials: React.FC = () => {
       const values = await controlForm.validateFields();
       setControlLoading(true);
       await apiClient.post(`/materials/${selectedMaterial.id}/incoming-controls`, {
-        ...values,
-        inspectionDate: values.inspectionDate?.format('YYYY-MM-DD'),
+        controlDate: values.inspectionDate?.format('YYYY-MM-DD'),
+        result: values.result,
+        visualCheck: values.visualCheck,
+        measurements: values.measurements,
+        notes: values.notes,
       });
       message.success(t.app.success);
       setControlModalVisible(false);
       controlForm.resetFields();
       openDetail(selectedMaterial.id);
     } catch (error: unknown) {
-      const err = error as { errorFields?: unknown };
-      if (!err.errorFields) message.error(t.app.error);
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setControlLoading(false);
     }
@@ -180,7 +188,7 @@ const Materials: React.FC = () => {
     { title: t.material?.name, dataIndex: 'name', key: 'name', render: (text: string) => <Text strong>{text}</Text> },
     { title: t.material?.brand, dataIndex: 'brand', key: 'brand', width: 120 },
     { title: t.material?.batchNumber, dataIndex: 'batchNumber', key: 'batchNumber', width: 120 },
-    { title: t.material?.supplier, dataIndex: 'supplier', key: 'supplier', width: 150 },
+    { title: t.material?.supplier, key: 'supplier', width: 150, render: (_: unknown, record: any) => record.supplier?.name || record.deliveryNote || '—' },
     { title: t.material?.arrivalDate, dataIndex: 'arrivalDate', key: 'arrivalDate', width: 120, render: (date: string) => (date ? dayjs(date).format('DD.MM.YYYY') : '—') },
     { title: t.material?.certificates, key: 'certs', width: 150, render: (_: unknown, record: Material) => getCertStatus(record) },
     { title: t.material?.incomingControl, key: 'control', width: 150, render: (_: unknown, record: Material) => getControlStatus(record) },
@@ -225,7 +233,7 @@ const Materials: React.FC = () => {
                   <Descriptions.Item label={t.material?.brand}>{selectedMaterial.brand || '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.manufacturer}>{selectedMaterial.manufacturer || '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.batchNumber}>{selectedMaterial.batchNumber || '—'}</Descriptions.Item>
-                  <Descriptions.Item label={t.material?.supplier}>{selectedMaterial.supplier || '—'}</Descriptions.Item>
+                  <Descriptions.Item label={t.material?.supplier}>{(selectedMaterial as any).supplier?.name || (selectedMaterial as any).deliveryNote || '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.arrivalDate}>{selectedMaterial.arrivalDate ? dayjs(selectedMaterial.arrivalDate).format('DD.MM.YYYY') : '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.quantity}>{selectedMaterial.quantity ? `${selectedMaterial.quantity} ${selectedMaterial.unit || ''}` : '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.app.status} span={2}><Tag color={materialStatusLabels[selectedMaterial.status]?.color}>{materialStatusLabels[selectedMaterial.status]?.label}</Tag></Descriptions.Item>
@@ -235,10 +243,10 @@ const Materials: React.FC = () => {
                 <div>
                   <Button type="primary" icon={<PlusOutlined />} onClick={() => setCertModalVisible(true)} style={{ marginBottom: 16 }}>{t.material?.addCertificate}</Button>
                   <List dataSource={selectedMaterial.certificates || []} locale={{ emptyText: t.app.noData }}
-                    renderItem={(cert: MaterialCertificate) => (
-                      <List.Item actions={[cert.fileUrl && <Button key="dl" type="link" icon={<DownloadOutlined />} href={cert.fileUrl} target="_blank">{t.app.download}</Button>].filter(Boolean)}>
-                        <List.Item.Meta avatar={<SafetyCertificateOutlined style={{ fontSize: 24 }} />} title={certTypeLabels[cert.type] || cert.type}
-                          description={<Space direction="vertical" size={0}>{cert.number && <Text>No: {cert.number}</Text>}{cert.issuer && <Text type="secondary">{cert.issuer}</Text>}{cert.issueDate && <Text type="secondary">{dayjs(cert.issueDate).format('DD.MM.YYYY')}{cert.expiryDate && ` — ${dayjs(cert.expiryDate).format('DD.MM.YYYY')}`}</Text>}</Space>} />
+                    renderItem={(cert: any) => (
+                      <List.Item actions={[cert.filePath && <Button key="dl" type="link" icon={<DownloadOutlined />} href={cert.filePath} target="_blank">{t.app.download}</Button>].filter(Boolean)}>
+                        <List.Item.Meta avatar={<SafetyCertificateOutlined style={{ fontSize: 24 }} />} title={certTypeLabels[cert.certType] || cert.certType}
+                          description={<Space direction="vertical" size={0}>{cert.certNumber && <Text>No: {cert.certNumber}</Text>}{cert.issuedBy && <Text type="secondary">{cert.issuedBy}</Text>}{cert.issueDate && <Text type="secondary">{dayjs(cert.issueDate).format('DD.MM.YYYY')}{cert.expiryDate && ` — ${dayjs(cert.expiryDate).format('DD.MM.YYYY')}`}</Text>}</Space>} />
                       </List.Item>
                     )} />
                 </div>
@@ -247,12 +255,12 @@ const Materials: React.FC = () => {
                 <div>
                   <Button type="primary" icon={<PlusOutlined />} onClick={() => setControlModalVisible(true)} style={{ marginBottom: 16 }}>{t.material?.performControl}</Button>
                   <List dataSource={selectedMaterial.incomingControls || []} locale={{ emptyText: t.app.noData }}
-                    renderItem={(ctrl: IncomingControl) => {
+                    renderItem={(ctrl: any) => {
                       const resCfg = controlResultLabels[ctrl.result] || { color: 'default', label: ctrl.result };
                       return (
                         <Card size="small" style={{ marginBottom: 8 }}>
                           <Descriptions size="small" column={2}>
-                            <Descriptions.Item label={t.app.date}>{dayjs(ctrl.inspectionDate).format('DD.MM.YYYY')}</Descriptions.Item>
+                            <Descriptions.Item label={t.app.date}>{dayjs(ctrl.controlDate).format('DD.MM.YYYY')}</Descriptions.Item>
                             <Descriptions.Item label={t.app.status}><Tag color={resCfg.color}>{resCfg.label}</Tag></Descriptions.Item>
                             {ctrl.visualCheck && <Descriptions.Item span={2}>{ctrl.visualCheck}</Descriptions.Item>}
                             {ctrl.notes && <Descriptions.Item label={t.journal?.notes} span={2}>{ctrl.notes}</Descriptions.Item>}

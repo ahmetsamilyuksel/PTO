@@ -32,4 +32,32 @@ apiClient.interceptors.response.use(
   },
 );
 
+/**
+ * Extract a user-friendly error message from an API error response.
+ * Falls back to the provided default message.
+ */
+export function getApiError(error: unknown, fallback: string): string {
+  const err = error as {
+    response?: { data?: { error?: string; message?: string }; status?: number };
+    errorFields?: unknown;
+  };
+
+  // Ant Design form validation error - let the form handle it
+  if (err.errorFields) return '';
+
+  // Extract server error message
+  const serverMsg = err.response?.data?.error || err.response?.data?.message;
+  if (serverMsg) return serverMsg;
+
+  // HTTP status code fallbacks
+  const status = err.response?.status;
+  if (status === 400) return fallback;
+  if (status === 403) return 'Yetki hatası / Access denied';
+  if (status === 404) return 'Kayıt bulunamadı / Not found';
+  if (status === 409) return 'Bu kayıt zaten mevcut / Already exists';
+  if (status === 500) return 'Sunucu hatası / Server error';
+
+  return fallback;
+}
+
 export default apiClient;

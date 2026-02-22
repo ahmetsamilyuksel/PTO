@@ -13,7 +13,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -51,7 +51,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: documents, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List documents error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка документов' });
+    return res.status(500).json({ error: 'Error fetching documents list' });
   }
 });
 
@@ -89,13 +89,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     return res.json(document);
   } catch (error) {
     console.error('Get document error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении документа' });
+    return res.status(500).json({ error: 'Error fetching document' });
   }
 });
 
@@ -109,32 +109,32 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!projectId || !documentType || !title) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, documentType, title' });
+      return res.status(400).json({ error: 'Required fields: projectId, documentType, title' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     if (templateId) {
       const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
       if (!template || !template.isActive) {
-        return res.status(404).json({ error: 'Шаблон документа не найден или неактивен' });
+        return res.status(404).json({ error: 'Document template not found or inactive' });
       }
     }
 
     if (locationId) {
       const location = await prisma.location.findUnique({ where: { id: locationId } });
       if (!location || location.deletedAt || location.projectId !== projectId) {
-        return res.status(404).json({ error: 'Локация не найдена' });
+        return res.status(404).json({ error: 'Location not found' });
       }
     }
 
     if (workItemId) {
       const workItem = await prisma.workItem.findUnique({ where: { id: workItemId } });
       if (!workItem || workItem.deletedAt || workItem.projectId !== projectId) {
-        return res.status(404).json({ error: 'Работа не найдена' });
+        return res.status(404).json({ error: 'Work item not found' });
       }
     }
 
@@ -161,7 +161,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(document);
   } catch (error) {
     console.error('Create document error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании документа' });
+    return res.status(500).json({ error: 'Error creating document' });
   }
 });
 
@@ -170,15 +170,15 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.document.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (existing.lockedAt) {
-      return res.status(400).json({ error: 'Документ заблокирован после подписания и не может быть изменён' });
+      return res.status(400).json({ error: 'Document is locked after signing and cannot be modified' });
     }
 
     if (!['DRAFT', 'REVISION_REQUESTED'].includes(existing.status)) {
-      return res.status(400).json({ error: 'Редактирование доступно только для черновиков и документов на доработке' });
+      return res.status(400).json({ error: 'Editing is only available for drafts and documents with revision requested' });
     }
 
     const {
@@ -205,7 +205,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(document);
   } catch (error) {
     console.error('Update document error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении документа' });
+    return res.status(500).json({ error: 'Error updating document' });
   }
 });
 
@@ -218,11 +218,11 @@ router.post('/:id/revision', async (req: AuthRequest, res: Response) => {
     });
 
     if (!original || original.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (!['SIGNED', 'IN_PACKAGE'].includes(original.status)) {
-      return res.status(400).json({ error: 'Ревизию можно создать только для подписанного документа' });
+      return res.status(400).json({ error: 'A revision can only be created for a signed document' });
     }
 
     const { reason } = req.body;

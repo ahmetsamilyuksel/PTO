@@ -11,7 +11,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Требуется авторизация' });
+    return res.status(401).json({ error: 'Authorization required' });
   }
 
   const token = authHeader.substring(7);
@@ -22,14 +22,14 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     req.userRole = decoded.role;
     next();
   } catch {
-    return res.status(401).json({ error: 'Недействительный токен' });
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }
 
 export function requireRole(...roles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.userRole || !roles.includes(req.userRole)) {
-      return res.status(403).json({ error: 'Недостаточно прав' });
+      return res.status(403).json({ error: 'Insufficient permissions' });
     }
     next();
   };

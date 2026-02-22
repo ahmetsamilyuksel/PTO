@@ -10,7 +10,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const { projectId, journalType, status } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const where: any = { projectId: projectId as string, deletedAt: null };
@@ -28,7 +28,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: journals });
   } catch (error) {
     console.error('List journals error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка журналов' });
+    return res.status(500).json({ error: 'Error fetching journals list' });
   }
 });
 
@@ -44,13 +44,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!journal || journal.deletedAt) {
-      return res.status(404).json({ error: 'Журнал не найден' });
+      return res.status(404).json({ error: 'Journal not found' });
     }
 
     return res.json(journal);
   } catch (error) {
     console.error('Get journal error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении журнала' });
+    return res.status(500).json({ error: 'Error fetching journal' });
   }
 });
 
@@ -60,12 +60,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { projectId, journalType, title, startDate } = req.body;
 
     if (!projectId || !journalType || !title) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, journalType, title' });
+      return res.status(400).json({ error: 'Required fields: projectId, journalType, title' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     // Check for duplicate journal type in project
@@ -73,7 +73,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       where: { projectId, journalType, deletedAt: null },
     });
     if (existing) {
-      return res.status(409).json({ error: `Журнал типа "${journalType}" уже существует в проекте` });
+      return res.status(409).json({ error: `Journal of type "${journalType}" already exists in the project` });
     }
 
     const journal = await prisma.journal.create({
@@ -89,7 +89,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(journal);
   } catch (error) {
     console.error('Create journal error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании журнала' });
+    return res.status(500).json({ error: 'Error creating journal' });
   }
 });
 
@@ -98,13 +98,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.journal.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Журнал не найден' });
+      return res.status(404).json({ error: 'Journal not found' });
     }
 
     const { title, startDate, endDate, status } = req.body;
 
     if (status === 'CLOSED' && !endDate) {
-      return res.status(400).json({ error: 'При закрытии журнала необходимо указать дату окончания (endDate)' });
+      return res.status(400).json({ error: 'End date (endDate) is required when closing a journal' });
     }
 
     const journal = await prisma.journal.update({
@@ -120,7 +120,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(journal);
   } catch (error) {
     console.error('Update journal error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении журнала' });
+    return res.status(500).json({ error: 'Error updating journal' });
   }
 });
 
@@ -133,11 +133,11 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Журнал не найден' });
+      return res.status(404).json({ error: 'Journal not found' });
     }
 
     if (existing._count.entries > 0) {
-      return res.status(400).json({ error: 'Нельзя удалить журнал с записями. Закройте журнал вместо удаления.' });
+      return res.status(400).json({ error: 'Cannot delete a journal that has entries. Close the journal instead.' });
     }
 
     await prisma.journal.update({
@@ -145,10 +145,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Журнал удалён' });
+    return res.json({ message: 'Journal deleted' });
   } catch (error) {
     console.error('Delete journal error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении журнала' });
+    return res.status(500).json({ error: 'Error deleting journal' });
   }
 });
 
@@ -165,7 +165,7 @@ router.get('/:id/entries', async (req: AuthRequest, res: Response) => {
 
     const journal = await prisma.journal.findUnique({ where: { id: req.params.id } });
     if (!journal || journal.deletedAt) {
-      return res.status(404).json({ error: 'Журнал не найден' });
+      return res.status(404).json({ error: 'Journal not found' });
     }
 
     const where: any = { journalId: req.params.id };
@@ -199,7 +199,7 @@ router.get('/:id/entries', async (req: AuthRequest, res: Response) => {
     return res.json({ data: entries, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List journal entries error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении записей журнала' });
+    return res.status(500).json({ error: 'Error fetching journal entries' });
   }
 });
 
@@ -223,13 +223,13 @@ router.get('/:journalId/entries/:entryId', async (req: AuthRequest, res: Respons
     });
 
     if (!entry || entry.journalId !== req.params.journalId) {
-      return res.status(404).json({ error: 'Запись журнала не найдена' });
+      return res.status(404).json({ error: 'Journal entry not found' });
     }
 
     return res.json(entry);
   } catch (error) {
     console.error('Get journal entry error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении записи журнала' });
+    return res.status(500).json({ error: 'Error fetching journal entry' });
   }
 });
 
@@ -238,11 +238,11 @@ router.post('/:id/entries', async (req: AuthRequest, res: Response) => {
   try {
     const journal = await prisma.journal.findUnique({ where: { id: req.params.id } });
     if (!journal || journal.deletedAt) {
-      return res.status(404).json({ error: 'Журнал не найден' });
+      return res.status(404).json({ error: 'Journal not found' });
     }
 
     if (journal.status !== 'ACTIVE') {
-      return res.status(400).json({ error: 'Нельзя добавить запись в закрытый или архивный журнал' });
+      return res.status(400).json({ error: 'Cannot add entries to a closed or archived journal' });
     }
 
     const {
@@ -253,7 +253,7 @@ router.post('/:id/entries', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!entryDate || !workDescription) {
-      return res.status(400).json({ error: 'Обязательные поля: entryDate, workDescription' });
+      return res.status(400).json({ error: 'Required fields: entryDate, workDescription' });
     }
 
     // Auto-increment entry number
@@ -314,7 +314,7 @@ router.post('/:id/entries', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(full);
   } catch (error) {
     console.error('Create journal entry error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании записи журнала' });
+    return res.status(500).json({ error: 'Error creating journal entry' });
   }
 });
 
@@ -323,7 +323,7 @@ router.put('/:journalId/entries/:entryId', async (req: AuthRequest, res: Respons
   try {
     const entry = await prisma.journalEntry.findUnique({ where: { id: req.params.entryId } });
     if (!entry || entry.journalId !== req.params.journalId) {
-      return res.status(404).json({ error: 'Запись журнала не найдена' });
+      return res.status(404).json({ error: 'Journal entry not found' });
     }
 
     const {
@@ -356,7 +356,7 @@ router.put('/:journalId/entries/:entryId', async (req: AuthRequest, res: Respons
     return res.json(updated);
   } catch (error) {
     console.error('Update journal entry error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении записи журнала' });
+    return res.status(500).json({ error: 'Error updating journal entry' });
   }
 });
 
@@ -365,7 +365,7 @@ router.delete('/:journalId/entries/:entryId', async (req: AuthRequest, res: Resp
   try {
     const entry = await prisma.journalEntry.findUnique({ where: { id: req.params.entryId } });
     if (!entry || entry.journalId !== req.params.journalId) {
-      return res.status(404).json({ error: 'Запись журнала не найдена' });
+      return res.status(404).json({ error: 'Journal entry not found' });
     }
 
     // Delete linked documents first
@@ -373,10 +373,10 @@ router.delete('/:journalId/entries/:entryId', async (req: AuthRequest, res: Resp
 
     await prisma.journalEntry.delete({ where: { id: req.params.entryId } });
 
-    return res.json({ message: 'Запись журнала удалена' });
+    return res.json({ message: 'Journal entry deleted' });
   } catch (error) {
     console.error('Delete journal entry error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении записи журнала' });
+    return res.status(500).json({ error: 'Error deleting journal entry' });
   }
 });
 
@@ -385,17 +385,17 @@ router.post('/:journalId/entries/:entryId/link-document', async (req: AuthReques
   try {
     const entry = await prisma.journalEntry.findUnique({ where: { id: req.params.entryId } });
     if (!entry || entry.journalId !== req.params.journalId) {
-      return res.status(404).json({ error: 'Запись журнала не найдена' });
+      return res.status(404).json({ error: 'Journal entry not found' });
     }
 
     const { documentId } = req.body;
     if (!documentId) {
-      return res.status(400).json({ error: 'Обязательное поле: documentId' });
+      return res.status(400).json({ error: 'Required field: documentId' });
     }
 
     const document = await prisma.document.findUnique({ where: { id: documentId } });
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     const link = await prisma.journalEntryDocLink.create({
@@ -411,10 +411,10 @@ router.post('/:journalId/entries/:entryId/link-document', async (req: AuthReques
     return res.status(201).json(link);
   } catch (error: any) {
     if (error?.code === 'P2002') {
-      return res.status(409).json({ error: 'Документ уже привязан к этой записи журнала' });
+      return res.status(409).json({ error: 'Document is already linked to this journal entry' });
     }
     console.error('Link document error:', error);
-    return res.status(500).json({ error: 'Ошибка при привязке документа к записи журнала' });
+    return res.status(500).json({ error: 'Error linking document to journal entry' });
   }
 });
 
@@ -423,15 +423,15 @@ router.delete('/:journalId/entries/:entryId/link-document/:linkId', async (req: 
   try {
     const link = await prisma.journalEntryDocLink.findUnique({ where: { id: req.params.linkId } });
     if (!link || link.journalEntryId !== req.params.entryId) {
-      return res.status(404).json({ error: 'Связь с документом не найдена' });
+      return res.status(404).json({ error: 'Document link not found' });
     }
 
     await prisma.journalEntryDocLink.delete({ where: { id: req.params.linkId } });
 
-    return res.json({ message: 'Связь с документом удалена' });
+    return res.json({ message: 'Document link deleted' });
   } catch (error) {
     console.error('Unlink document error:', error);
-    return res.status(500).json({ error: 'Ошибка при отвязке документа от записи журнала' });
+    return res.status(500).json({ error: 'Error unlinking document from journal entry' });
   }
 });
 

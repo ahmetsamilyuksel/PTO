@@ -36,7 +36,7 @@ import {
 } from '@ant-design/icons';
 import { useParams, useSearchParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type {
   Document,
   DocumentStatus,
@@ -208,10 +208,8 @@ const Documents: React.FC = () => {
       setSelectedEvent(undefined);
       fetchDocuments();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; errorFields?: unknown };
-      if (!err.errorFields) {
-        message.error(err.response?.data?.message || t.app.error);
-      }
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setCreateLoading(false);
     }
@@ -227,8 +225,7 @@ const Documents: React.FC = () => {
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || t.app.error);
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -254,8 +251,7 @@ const Documents: React.FC = () => {
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || t.app.error);
+      message.error(getApiError(error, t.app.error));
     } finally {
       setActionLoading(false);
     }

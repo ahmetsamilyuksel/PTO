@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type { Journal, JournalType, JournalStatus, JournalEntry } from '../types';
 import { useI18n } from '../i18n';
 
@@ -24,15 +24,17 @@ const Journals: React.FC = () => {
     GENERAL: t.journal?.types?.GENERAL || 'Genel İş Günlüğü',
     CONCRETE: t.journal?.types?.CONCRETE || 'Beton İşleri Günlüğü',
     WELDING: t.journal?.types?.WELDING || 'Kaynak İşleri Günlüğü',
-    PILE: t.journal?.types?.PILE_DRIVING || 'Kazık Çakma Günlüğü',
+    PILE_DRIVING: t.journal?.types?.PILE_DRIVING || 'Kazık Çakma Günlüğü',
     ANTICORROSION: t.journal?.types?.ANTICORROSION || 'Antikorozyon Günlüğü',
     GEODETIC: t.journal?.types?.GEODETIC || 'Jeodezik Günlük',
-    SAFETY: t.journal?.types?.OTHER || 'İSG Günlüğü',
+    INSULATION: t.journal?.types?.OTHER || 'İzolasyon Günlüğü',
+    INSTALLATION: t.journal?.types?.OTHER || 'Montaj Günlüğü',
+    OTHER: t.journal?.types?.OTHER || 'Diğer',
   };
 
   const journalStatusLabels: Record<string, { color: string; label: string }> = {
     ACTIVE: { color: 'green', label: t.project?.statuses?.ACTIVE || 'Aktif' },
-    COMPLETED: { color: 'blue', label: t.progress?.statuses?.COMPLETED || 'Tamamlandı' },
+    CLOSED: { color: 'blue', label: t.progress?.statuses?.COMPLETED || 'Kapatıldı' },
     ARCHIVED: { color: 'default', label: t.project?.statuses?.ARCHIVED || 'Arşiv' },
   };
 
@@ -114,8 +116,7 @@ const Journals: React.FC = () => {
       const values = await createForm.validateFields();
       setCreateLoading(true);
       await apiClient.post('/journals', {
-        projectId, type: values.type, title: values.title,
-        number: values.number,
+        projectId, journalType: values.type, title: values.title,
         startDate: values.startDate?.format('YYYY-MM-DD'),
       });
       message.success(t.app.success);
@@ -123,8 +124,8 @@ const Journals: React.FC = () => {
       createForm.resetFields();
       fetchJournals();
     } catch (error: unknown) {
-      const err = error as { errorFields?: unknown };
-      if (!err.errorFields) message.error(t.app.error);
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setCreateLoading(false);
     }
@@ -136,15 +137,22 @@ const Journals: React.FC = () => {
       const values = await entryForm.validateFields();
       setEntryLoading(true);
       await apiClient.post(`/journals/${selectedJournal.id}/entries`, {
-        ...values, date: values.date?.format('YYYY-MM-DD'),
+        entryDate: values.date?.format('YYYY-MM-DD'),
+        weatherConditions: values.weather,
+        temperature: values.temperature,
+        crewInfo: values.crewCount ? `${values.crewCount} kişi` : undefined,
+        workDescription: values.workDescription,
+        materialsUsed: values.materialsUsed,
+        controlActions: values.controlNotes,
+        notes: values.notes,
       });
       message.success(t.app.success);
       setEntryModalVisible(false);
       entryForm.resetFields();
       fetchEntries(selectedJournal.id, 1);
     } catch (error: unknown) {
-      const err = error as { errorFields?: unknown };
-      if (!err.errorFields) message.error(t.app.error);
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setEntryLoading(false);
     }
@@ -167,8 +175,7 @@ const Journals: React.FC = () => {
   };
 
   const columns = [
-    { title: t.doc?.number || 'No', dataIndex: 'number', key: 'number', width: 120, render: (text: string) => <Text strong>{text}</Text> },
-    { title: t.app.type, dataIndex: 'type', key: 'type', width: 200, render: (type: JournalType) => <Tag icon={<BookOutlined />} color="blue">{journalTypeLabels[type] || type}</Tag> },
+    { title: t.app.type, dataIndex: 'journalType', key: 'journalType', width: 200, render: (type: JournalType) => <Tag icon={<BookOutlined />} color="blue">{journalTypeLabels[type] || type}</Tag> },
     { title: t.app.name, dataIndex: 'title', key: 'title', ellipsis: true },
     { title: t.app.status, dataIndex: 'status', key: 'status', width: 120, render: (status: JournalStatus) => { const cfg = journalStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
     { title: t.corrections?.assignedTo || 'Sorumlu', key: 'responsible', width: 180, render: (_: unknown, record: Journal) => record.responsible?.fullName || '—' },
@@ -183,12 +190,12 @@ const Journals: React.FC = () => {
 
   const entryColumns = [
     { title: '#', dataIndex: 'entryNumber', key: 'entryNumber', width: 60 },
-    { title: t.app.date, dataIndex: 'date', key: 'date', width: 110, render: (date: string) => dayjs(date).format('DD.MM.YYYY') },
-    { title: t.journal?.weather, dataIndex: 'weather', key: 'weather', width: 100 },
-    { title: t.journal?.crew, dataIndex: 'crewCount', key: 'crewCount', width: 80, render: (v: number) => (v ? `${v} kişi` : '—') },
+    { title: t.app.date, dataIndex: 'entryDate', key: 'entryDate', width: 110, render: (date: string) => dayjs(date).format('DD.MM.YYYY') },
+    { title: t.journal?.weather, dataIndex: 'weatherConditions', key: 'weatherConditions', width: 100 },
+    { title: t.journal?.crew, dataIndex: 'crewInfo', key: 'crewInfo', width: 80, render: (v: string) => (v || '—') },
     { title: t.journal?.workDescription, dataIndex: 'workDescription', key: 'workDescription', ellipsis: true },
     { title: t.journal?.materialsUsed, dataIndex: 'materialsUsed', key: 'materialsUsed', width: 150, ellipsis: true },
-    { title: t.journal?.controlActions, dataIndex: 'controlNotes', key: 'controlNotes', width: 150, ellipsis: true },
+    { title: t.journal?.controlActions, dataIndex: 'controlActions', key: 'controlActions', width: 150, ellipsis: true },
   ];
 
   return (
@@ -205,14 +212,11 @@ const Journals: React.FC = () => {
             <Select options={Object.entries(journalTypeLabels).map(([value, label]) => ({ value, label }))} />
           </Form.Item>
           <Form.Item name="title" label={t.app.name} rules={[{ required: true, message: t.app.required }]}><Input /></Form.Item>
-          <Row gutter={16}>
-            <Col span={12}><Form.Item name="number" label={t.doc?.number || 'No'}><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="startDate" label={t.project?.startDate} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-          </Row>
+          <Form.Item name="startDate" label={t.project?.startDate} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item>
         </Form>
       </Modal>
 
-      <Drawer title={selectedJournal ? `${selectedJournal.number} — ${selectedJournal.title}` : t.journal?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedJournal(null); setEntries([]); }} width={900}
+      <Drawer title={selectedJournal ? selectedJournal.title : t.journal?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedJournal(null); setEntries([]); }} width={900}
         extra={selectedJournal && (
           <Space>
             <Button icon={<PlusOutlined />} type="primary" onClick={() => setEntryModalVisible(true)} disabled={selectedJournal.status !== 'ACTIVE'}>{t.journal?.addEntry}</Button>
@@ -223,9 +227,9 @@ const Journals: React.FC = () => {
           {selectedJournal && (
             <>
               <Descriptions bordered column={2} size="small" style={{ marginBottom: 24 }}>
-                <Descriptions.Item label={t.app.type}>{journalTypeLabels[selectedJournal.type]}</Descriptions.Item>
+                <Descriptions.Item label={t.app.type}>{journalTypeLabels[selectedJournal.journalType] || selectedJournal.journalType}</Descriptions.Item>
                 <Descriptions.Item label={t.app.status}><Tag color={journalStatusLabels[selectedJournal.status]?.color}>{journalStatusLabels[selectedJournal.status]?.label}</Tag></Descriptions.Item>
-                <Descriptions.Item label={t.doc?.number}>{selectedJournal.number}</Descriptions.Item>
+                <Descriptions.Item label={t.doc?.number}>—</Descriptions.Item>
                 <Descriptions.Item label={t.corrections?.assignedTo || 'Sorumlu'}>{selectedJournal.responsible?.fullName || '—'}</Descriptions.Item>
                 <Descriptions.Item label={t.project?.startDate}>{selectedJournal.startDate ? dayjs(selectedJournal.startDate).format('DD.MM.YYYY') : '—'}</Descriptions.Item>
                 <Descriptions.Item label={t.project?.plannedEndDate || 'Bitiş'}>{selectedJournal.endDate ? dayjs(selectedJournal.endDate).format('DD.MM.YYYY') : '—'}</Descriptions.Item>
