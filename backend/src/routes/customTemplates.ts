@@ -1,5 +1,28 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../index';
+import { uploadFile, isStorageReady } from '../services/storage';
+import { config } from '../config';
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+
+// Configure multer for template file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: config.upload.maxFileSize },
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/pdf',
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Недопустимый тип файла: ${file.mimetype}. Разрешены: DOCX, XLSX, PDF`));
+    }
+  },
+});
 
 const router = Router();
 
@@ -69,13 +92,32 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST /api/custom-templates
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', upload.single('file'), async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
     const { projectId, name, description, documentType, categoryId, fields, format } = req.body;
 
     if (!projectId || !name) {
       return res.status(400).json({ error: 'projectId and name are required' });
+    }
+
+    let filePath: string | null = null;
+    let fileName: string | null = null;
+    let fileSize: number | null = null;
+
+    // Handle file upload if provided
+    const file = req.file;
+    if (file) {
+      const fileId = uuidv4();
+      const ext = path.extname(file.originalname);
+      const storedName = `${fileId}${ext}`;
+      filePath = `templates/${projectId}/${storedName}`;
+      fileName = file.originalname;
+      fileSize = file.size;
+
+      if (isStorageReady()) {
+        await uploadFile(filePath, file.buffer, file.mimetype);
+      }
     }
 
     const template = await prisma.customTemplate.create({
@@ -85,8 +127,11 @@ router.post('/', async (req: Request, res: Response) => {
         description,
         documentType: documentType || null,
         categoryId: categoryId || null,
-        fields: fields || null,
+        fields: fields ? (typeof fields === 'string' ? JSON.parse(fields) : fields) : null,
         format: format || 'DOCX',
+        filePath,
+        fileName,
+        fileSize,
         createdById: userId,
       },
       include: {
@@ -97,7 +142,10 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     res.status(201).json(template);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes('Недопустимый тип файла')) {
+      return res.status(400).json({ error: error.message });
+    }
     console.error('Error creating template:', error);
     res.status(500).json({ error: 'Failed to create template' });
   }

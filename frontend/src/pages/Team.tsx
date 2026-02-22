@@ -55,7 +55,7 @@ const Team: React.FC = () => {
   const fetchOrganizations = async () => {
     try {
       const res = await apiClient.get('/organizations');
-      setOrganizations(res.data || []);
+      setOrganizations(res.data?.data || res.data || []);
     } catch { /* ignore */ }
   };
 

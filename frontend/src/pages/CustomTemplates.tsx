@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Card, Table, Button, Modal, Form, Input, Select, Tag, Space,
-  message, Popconfirm, Typography, Switch, Badge, Descriptions,
+  message, Popconfirm, Typography, Switch, Badge, Descriptions, Upload,
 } from 'antd';
+import type { UploadFile } from 'antd';
 import {
   PlusOutlined, FileTextOutlined, DeleteOutlined, EditOutlined,
-  EyeOutlined, SnippetsOutlined,
+  EyeOutlined, SnippetsOutlined, UploadOutlined, InboxOutlined,
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -23,6 +24,7 @@ const CustomTemplates: React.FC = () => {
   const [detailVisible, setDetailVisible] = useState(false);
   const [editTemplate, setEditTemplate] = useState<any>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -49,13 +51,30 @@ const CustomTemplates: React.FC = () => {
   const handleSave = async (values: any) => {
     try {
       if (editTemplate) {
-        await apiClient.put(`/custom-templates/${editTemplate.id}`, values);
+        // Edit mode: update metadata only (no file re-upload)
+        const { file, ...rest } = values;
+        await apiClient.put(`/custom-templates/${editTemplate.id}`, rest);
       } else {
-        await apiClient.post('/custom-templates', { ...values, projectId });
+        // Create mode: send file + metadata via FormData
+        const formData = new FormData();
+        formData.append('projectId', projectId || '');
+        formData.append('name', values.name);
+        if (values.description) formData.append('description', values.description);
+        if (values.documentType) formData.append('documentType', values.documentType);
+        if (values.format) formData.append('format', values.format);
+
+        if (fileList.length > 0 && fileList[0].originFileObj) {
+          formData.append('file', fileList[0].originFileObj);
+        }
+
+        await apiClient.post('/custom-templates', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       }
       message.success(t.app.success);
       setModalVisible(false);
       setEditTemplate(null);
+      setFileList([]);
       form.resetFields();
       fetchTemplates();
     } catch {
@@ -161,7 +180,7 @@ const CustomTemplates: React.FC = () => {
       <Card
         title={<Space><SnippetsOutlined /> {t.templates?.title || 'Custom Templates'}</Space>}
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditTemplate(null); form.resetFields(); setModalVisible(true); }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditTemplate(null); setFileList([]); form.resetFields(); setModalVisible(true); }}>
             {t.templates?.addTemplate || 'Add Template'}
           </Button>
         }
@@ -173,7 +192,7 @@ const CustomTemplates: React.FC = () => {
       <Modal
         title={editTemplate ? (t.templates?.editTemplate || 'Edit Template') : (t.templates?.addTemplate || 'Add Template')}
         open={modalVisible}
-        onCancel={() => { setModalVisible(false); setEditTemplate(null); form.resetFields(); }}
+        onCancel={() => { setModalVisible(false); setEditTemplate(null); setFileList([]); form.resetFields(); }}
         onOk={() => form.submit()}
         width={600}
       >
@@ -194,6 +213,27 @@ const CustomTemplates: React.FC = () => {
               { value: 'PDF', label: 'PDF' },
             ]} />
           </Form.Item>
+          {!editTemplate && (
+            <Form.Item
+              label={t.templates?.file || 'Шаблон файлы'}
+              rules={[{ required: true, message: t.templates?.fileRequired || 'Dosya seçiniz / Выберите файл' }]}
+            >
+              <Upload.Dragger
+                fileList={fileList}
+                beforeUpload={(file) => {
+                  setFileList([file as unknown as UploadFile]);
+                  return false; // prevent auto upload
+                }}
+                onRemove={() => setFileList([])}
+                maxCount={1}
+                accept=".docx,.xlsx,.pdf"
+              >
+                <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+                <p className="ant-upload-text">{t.templates?.dragFile || 'Dosyayı buraya sürükleyin veya tıklayın'}</p>
+                <p className="ant-upload-hint">DOCX, XLSX, PDF (max 50MB)</p>
+              </Upload.Dragger>
+            </Form.Item>
+          )}
           {editTemplate && (
             <Form.Item name="isActive" label={t.app.status} valuePropName="checked">
               <Switch checkedChildren={t.app.yes} unCheckedChildren={t.app.no} />
@@ -219,6 +259,17 @@ const CustomTemplates: React.FC = () => {
               <Descriptions.Item label={t.templates?.version || 'Version'}>v{selectedTemplate.version}</Descriptions.Item>
               <Descriptions.Item label={t.templates?.createdBy || 'Created By'}>{selectedTemplate.createdBy?.fio}</Descriptions.Item>
               <Descriptions.Item label={t.app.date}>{dayjs(selectedTemplate.createdAt).format('DD.MM.YYYY')}</Descriptions.Item>
+              {selectedTemplate.fileName && (
+                <Descriptions.Item label={t.templates?.file || 'Dosya'} span={2}>
+                  <Space>
+                    <FileTextOutlined />
+                    {selectedTemplate.fileName}
+                    {selectedTemplate.fileSize && (
+                      <Tag>{(selectedTemplate.fileSize / 1024).toFixed(1)} KB</Tag>
+                    )}
+                  </Space>
+                </Descriptions.Item>
+              )}
             </Descriptions>
             {selectedTemplate.description && (
               <p style={{ marginTop: 16 }}><strong>{t.app.description}:</strong> {selectedTemplate.description}</p>
