@@ -501,6 +501,48 @@ export interface AuditLog {
   createdAt: string;
 }
 
+// ========== Permissions ==========
+
+export type PermissionAction = 'view' | 'create' | 'edit' | 'delete';
+
+export type PermissionModule =
+  | 'dashboard'
+  | 'documents'
+  | 'materials'
+  | 'journals'
+  | 'tasks'
+  | 'corrections'
+  | 'packages'
+  | 'templates'
+  | 'categories'
+  | 'team'
+  | 'matrix'
+  | 'progress'
+  | 'admin';
+
+export interface ModulePermissions {
+  view: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+
+export type UserPermissions = Record<PermissionModule, ModulePermissions>;
+
+export interface AdminUser {
+  id: string;
+  fio: string;
+  position?: string;
+  role: UserRole;
+  email: string;
+  phone?: string;
+  permissions: UserPermissions;
+  organizationId?: string;
+  organization?: { id: string; name: string; shortName?: string };
+  createdAt: string;
+  _count?: { projectMembers: number };
+}
+
 // ========== API Response Types ==========
 
 export interface LoginResponse {

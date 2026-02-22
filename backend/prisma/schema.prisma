@@ -44,6 +44,7 @@ model Person {
   sroNumber      String?  // Номер в реестре СРО
   sroOrg         String?  // Наименование СРО
   certificateInfo String? // Сертификаты/удостоверения
+  permissions    Json?    // Гранулярные права доступа (per-module view/create/edit/delete)
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   createdAt      DateTime @default(now())

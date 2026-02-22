@@ -64,6 +64,7 @@ export const ru = {
     team: 'Команда',
     categories: 'Категории',
     templates: 'Шаблоны',
+    admin: 'Администрирование',
   },
 
   // ─── Панель управления ───
@@ -566,6 +567,48 @@ export const ru = {
     usageCount: 'Использований',
     createdBy: 'Создал',
     usedIn: 'Используется в документах',
+  },
+
+  // ─── Администрирование ───
+  admin: {
+    title: 'Администрирование',
+    users: 'Пользователи',
+    permissions: 'Права доступа',
+    createUser: 'Создать пользователя',
+    editUser: 'Редактировать',
+    deleteUser: 'Удалить пользователя',
+    userRole: 'Роль',
+    position: 'Должность',
+    email: 'Email',
+    phone: 'Телефон',
+    organization: 'Организация',
+    projects: 'Проекты',
+    editPermissions: 'Настроить права',
+    resetToDefaults: 'Сбросить по роли',
+    permissionsSaved: 'Права сохранены',
+    modules: {
+      dashboard: 'Главная панель',
+      documents: 'Документы',
+      materials: 'Материалы',
+      journals: 'Журналы',
+      tasks: 'Задачи',
+      corrections: 'Исправления',
+      packages: 'Комплекты ИД',
+      templates: 'Шаблоны',
+      categories: 'Категории',
+      team: 'Команда',
+      matrix: 'Матрица',
+      progress: 'Прогресс',
+      admin: 'Администрирование',
+    },
+    actions: {
+      view: 'Просмотр',
+      create: 'Создание',
+      edit: 'Редактирование',
+      delete: 'Удаление',
+    },
+    password: 'Пароль',
+    defaultPassword: 'Пароль по умолчанию: Temp1234!',
   },
 
   // ─── Системные сообщения ───

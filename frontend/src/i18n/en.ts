@@ -66,6 +66,7 @@ export const en: TranslationKeys = {
     team: 'Team',
     categories: 'Categories',
     templates: 'Templates',
+    admin: 'Admin Panel',
   },
 
   // ─── Dashboard ───
@@ -568,6 +569,48 @@ export const en: TranslationKeys = {
     usageCount: 'Usage',
     createdBy: 'Created By',
     usedIn: 'Used In Documents',
+  },
+
+  // ─── Admin Panel ───
+  admin: {
+    title: 'Admin Panel',
+    users: 'Users',
+    permissions: 'Permissions',
+    createUser: 'Create User',
+    editUser: 'Edit',
+    deleteUser: 'Delete User',
+    userRole: 'Role',
+    position: 'Position',
+    email: 'Email',
+    phone: 'Phone',
+    organization: 'Organization',
+    projects: 'Projects',
+    editPermissions: 'Edit Permissions',
+    resetToDefaults: 'Reset to Role Defaults',
+    permissionsSaved: 'Permissions saved',
+    modules: {
+      dashboard: 'Dashboard',
+      documents: 'Documents',
+      materials: 'Materials',
+      journals: 'Journals',
+      tasks: 'Tasks',
+      corrections: 'Corrections',
+      packages: 'ID Packages',
+      templates: 'Templates',
+      categories: 'Categories',
+      team: 'Team',
+      matrix: 'Matrix',
+      progress: 'Progress',
+      admin: 'Admin',
+    },
+    actions: {
+      view: 'View',
+      create: 'Create',
+      edit: 'Edit',
+      delete: 'Delete',
+    },
+    password: 'Password',
+    defaultPassword: 'Default password: Temp1234!',
   },
 
   // ─── System Messages ───

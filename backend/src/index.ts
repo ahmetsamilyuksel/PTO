@@ -25,6 +25,7 @@ import taskRoutes from './routes/tasks';
 import correctionRoutes from './routes/corrections';
 import progressRoutes from './routes/progress';
 import teamRoutes from './routes/team';
+import adminRoutes from './routes/admin';
 import { initMinIO } from './services/storage';
 
 /**
@@ -52,36 +53,36 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-// Public routes
-app.use('/api/auth', authRoutes);
-
 // Health check
 app.get('/api/health', async (_req, res) => {
   try {
     await prisma.$queryRawUnsafe('SELECT 1');
     res.json({ status: 'ok', db: 'connected', system: config.systemName, env: process.env.NODE_ENV });
   } catch (error) {
-    res.json({ status: 'ok', db: 'disconnected', system: config.systemName, env: process.env.NODE_ENV });
+    res.status(503).json({ status: 'error', db: 'disconnected', system: config.systemName, env: process.env.NODE_ENV });
   }
 });
 
-// Database warmup middleware for Neon cold starts on Vercel.
-// On the first request after Neon sleeps, this ensures the DB is awake
-// before the route handler tries to use it.
+// Database warmup middleware for Neon cold starts.
+// MUST be before ALL routes (including auth) so that login requests also benefit.
 let dbReady = false;
-app.use('/api', async (_req, _res, next) => {
+app.use('/api', async (_req, res, next) => {
   if (!dbReady) {
     try {
       await prisma.$queryRawUnsafe('SELECT 1');
       dbReady = true;
       // Reset after 4 minutes (Neon sleeps after 5 min)
       setTimeout(() => { dbReady = false; }, 4 * 60 * 1000);
-    } catch {
-      // DB might be waking up - Prisma will retry with extended timeout
+    } catch (error) {
+      console.error('Database warmup failed:', error instanceof Error ? error.message : error);
+      return res.status(503).json({ error: 'Database is waking up, please try again in a few seconds' });
     }
   }
   next();
 });
+
+// Public routes (after DB warmup so login can reach the database)
+app.use('/api/auth', authRoutes);
 
 // Protected routes
 app.use('/api', authMiddleware);
@@ -107,6 +108,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/corrections', correctionRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Export app for Vercel serverless
 export default app;

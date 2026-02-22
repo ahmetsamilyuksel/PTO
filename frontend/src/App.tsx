@@ -24,6 +24,7 @@ import ProjectProgress from './pages/ProjectProgress';
 import Team from './pages/Team';
 import Categories from './pages/Categories';
 import CustomTemplates from './pages/CustomTemplates';
+import AdminPanel from './pages/AdminPanel';
 
 const antdLocales: Record<Language, typeof ruRU> = {
   ru: ruRU,
@@ -91,6 +92,7 @@ const App: React.FC = () => {
             <Route path="projects/:id/team" element={<Team />} />
             <Route path="projects/:id/categories" element={<Categories />} />
             <Route path="projects/:id/templates" element={<CustomTemplates />} />
+            <Route path="admin" element={<AdminPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
