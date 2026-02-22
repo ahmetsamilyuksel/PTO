@@ -27,7 +27,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: rules });
   } catch (error) {
     console.error('List matrix rules error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении правил матрицы документов' });
+    return res.status(500).json({ error: 'Error fetching document matrix rules' });
   }
 });
 
@@ -42,13 +42,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!rule) {
-      return res.status(404).json({ error: 'Правило матрицы не найдено' });
+      return res.status(404).json({ error: 'Matrix rule not found' });
     }
 
     return res.json(rule);
   } catch (error) {
     console.error('Get matrix rule error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении правила матрицы' });
+    return res.status(500).json({ error: 'Error fetching matrix rule' });
   }
 });
 
@@ -64,18 +64,18 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
 
     if (!workType || !documentType || !triggerEvent || !preparedByRole || !signedByRoles) {
       return res.status(400).json({
-        error: 'Обязательные поля: workType, documentType, triggerEvent, preparedByRole, signedByRoles',
+        error: 'Required fields: workType, documentType, triggerEvent, preparedByRole, signedByRoles',
       });
     }
 
     if (!Array.isArray(signedByRoles) || signedByRoles.length === 0) {
-      return res.status(400).json({ error: 'signedByRoles должен быть непустым массивом ролей' });
+      return res.status(400).json({ error: 'signedByRoles must be a non-empty array of roles' });
     }
 
     if (projectId) {
       const project = await prisma.project.findUnique({ where: { id: projectId } });
       if (!project || project.deletedAt) {
-        return res.status(404).json({ error: 'Проект не найден' });
+        return res.status(404).json({ error: 'Project not found' });
       }
     }
 
@@ -99,7 +99,7 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
     return res.status(201).json(rule);
   } catch (error) {
     console.error('Create matrix rule error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании правила матрицы' });
+    return res.status(500).json({ error: 'Error creating matrix rule' });
   }
 });
 
@@ -108,7 +108,7 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
   try {
     const existing = await prisma.documentMatrixRule.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Правило матрицы не найдено' });
+      return res.status(404).json({ error: 'Matrix rule not found' });
     }
 
     const {
@@ -119,7 +119,7 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
     } = req.body;
 
     if (signedByRoles !== undefined && (!Array.isArray(signedByRoles) || signedByRoles.length === 0)) {
-      return res.status(400).json({ error: 'signedByRoles должен быть непустым массивом ролей' });
+      return res.status(400).json({ error: 'signedByRoles must be a non-empty array of roles' });
     }
 
     const rule = await prisma.documentMatrixRule.update({
@@ -142,7 +142,7 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
     return res.json(rule);
   } catch (error) {
     console.error('Update matrix rule error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении правила матрицы' });
+    return res.status(500).json({ error: 'Error updating matrix rule' });
   }
 });
 
@@ -151,15 +151,15 @@ router.delete('/:id', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthR
   try {
     const existing = await prisma.documentMatrixRule.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Правило матрицы не найдено' });
+      return res.status(404).json({ error: 'Matrix rule not found' });
     }
 
     await prisma.documentMatrixRule.delete({ where: { id: req.params.id } });
 
-    return res.json({ message: 'Правило матрицы удалено' });
+    return res.json({ message: 'Matrix rule deleted' });
   } catch (error) {
     console.error('Delete matrix rule error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении правила матрицы' });
+    return res.status(500).json({ error: 'Error deleting matrix rule' });
   }
 });
 
@@ -170,7 +170,7 @@ router.post('/apply', async (req: AuthRequest, res: Response) => {
     const { workItemId, triggerEvent } = req.body;
 
     if (!workItemId || !triggerEvent) {
-      return res.status(400).json({ error: 'Обязательные поля: workItemId, triggerEvent' });
+      return res.status(400).json({ error: 'Required fields: workItemId, triggerEvent' });
     }
 
     const workItem = await prisma.workItem.findUnique({
@@ -185,7 +185,7 @@ router.post('/apply', async (req: AuthRequest, res: Response) => {
     });
 
     if (!workItem || workItem.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     // Find applicable rules (project-specific first, then global)
@@ -203,7 +203,7 @@ router.post('/apply', async (req: AuthRequest, res: Response) => {
     });
 
     if (rules.length === 0) {
-      return res.json({ message: 'Нет применимых правил матрицы', documents: [] });
+      return res.json({ message: 'No applicable matrix rules', documents: [] });
     }
 
     // Deduplicate by documentType (project rules override global)
@@ -285,13 +285,13 @@ router.post('/apply', async (req: AuthRequest, res: Response) => {
     }
 
     return res.json({
-      message: `Создано ${createdDocuments.length} документов по матрице`,
+      message: `Created ${createdDocuments.length} documents from matrix rules`,
       rulesApplied: applicableRules.length,
       documents: createdDocuments,
     });
   } catch (error) {
     console.error('Apply matrix error:', error);
-    return res.status(500).json({ error: 'Ошибка при применении правил матрицы' });
+    return res.status(500).json({ error: 'Error applying matrix rules' });
   }
 });
 
@@ -371,10 +371,10 @@ router.post('/seed-defaults', requireRole('ADMIN'), async (req: AuthRequest, res
       }
     }
 
-    return res.json({ message: `Создано ${created} правил матрицы по умолчанию`, total: defaults.length });
+    return res.json({ message: `Created ${created} default matrix rules`, total: defaults.length });
   } catch (error) {
     console.error('Seed defaults error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании правил по умолчанию' });
+    return res.status(500).json({ error: 'Error creating default matrix rules' });
   }
 });
 

@@ -31,7 +31,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: templates });
   } catch (error) {
     console.error('List templates error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка шаблонов' });
+    return res.status(500).json({ error: 'Error fetching templates list' });
   }
 });
 
@@ -46,13 +46,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!template) {
-      return res.status(404).json({ error: 'Шаблон не найден' });
+      return res.status(404).json({ error: 'Template not found' });
     }
 
     return res.json(template);
   } catch (error) {
     console.error('Get template error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении шаблона' });
+    return res.status(500).json({ error: 'Error fetching template' });
   }
 });
 
@@ -62,7 +62,7 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
     const { name, documentType, description, filePath, fields } = req.body;
 
     if (!name || !documentType || !filePath) {
-      return res.status(400).json({ error: 'Обязательные поля: name, documentType, filePath' });
+      return res.status(400).json({ error: 'Required fields: name, documentType, filePath' });
     }
 
     const template = await prisma.documentTemplate.create({
@@ -80,7 +80,7 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
     return res.status(201).json(template);
   } catch (error) {
     console.error('Create template error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании шаблона' });
+    return res.status(500).json({ error: 'Error creating template' });
   }
 });
 
@@ -89,7 +89,7 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
   try {
     const existing = await prisma.documentTemplate.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Шаблон не найден' });
+      return res.status(404).json({ error: 'Template not found' });
     }
 
     const { name, description, filePath, fields, isActive } = req.body;
@@ -114,7 +114,7 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
     return res.json(template);
   } catch (error) {
     console.error('Update template error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении шаблона' });
+    return res.status(500).json({ error: 'Error updating template' });
   }
 });
 
@@ -127,7 +127,7 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
     });
 
     if (!existing) {
-      return res.status(404).json({ error: 'Шаблон не найден' });
+      return res.status(404).json({ error: 'Template not found' });
     }
 
     if (existing._count.documents > 0) {
@@ -136,15 +136,15 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
         where: { id: req.params.id },
         data: { isActive: false },
       });
-      return res.json({ message: 'Шаблон деактивирован (используется документами)' });
+      return res.json({ message: 'Template deactivated (in use by documents)' });
     }
 
     await prisma.documentTemplate.delete({ where: { id: req.params.id } });
 
-    return res.json({ message: 'Шаблон удалён' });
+    return res.json({ message: 'Template deleted' });
   } catch (error) {
     console.error('Delete template error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении шаблона' });
+    return res.status(500).json({ error: 'Error deleting template' });
   }
 });
 
@@ -153,14 +153,14 @@ router.post('/:id/duplicate', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'
   try {
     const original = await prisma.documentTemplate.findUnique({ where: { id: req.params.id } });
     if (!original) {
-      return res.status(404).json({ error: 'Шаблон не найден' });
+      return res.status(404).json({ error: 'Template not found' });
     }
 
     const { name } = req.body;
 
     const duplicate = await prisma.documentTemplate.create({
       data: {
-        name: name || `${original.name} (копия)`,
+        name: name || `${original.name} (copy)`,
         documentType: original.documentType,
         description: original.description,
         filePath: original.filePath,
@@ -173,7 +173,7 @@ router.post('/:id/duplicate', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'
     return res.status(201).json(duplicate);
   } catch (error) {
     console.error('Duplicate template error:', error);
-    return res.status(500).json({ error: 'Ошибка при копировании шаблона' });
+    return res.status(500).json({ error: 'Error copying template' });
   }
 });
 

@@ -60,11 +60,11 @@ export async function buildPackage(packageId: string): Promise<{
   });
 
   if (!pkg) {
-    throw new Error(`Комплект с ID "${packageId}" не найден`);
+    throw new Error(`Package with ID "${packageId}" not found`);
   }
 
   if (pkg.items.length === 0) {
-    throw new Error('Комплект не содержит документов');
+    throw new Error('Package contains no documents');
   }
 
   // Устанавливаем статус GENERATING
@@ -158,10 +158,10 @@ async function createZipArchive(
           archive.append(fileBuffer, { name: `${folder}/${fileName}` });
         } catch (err) {
           console.error(
-            `[packageBuilder] Не удалось скачать файл документа ${doc.id}: ${err}`
+            `[packageBuilder] Failed to download document file ${doc.id}: ${err}`
           );
           // Добавляем заметку об ошибке
-          const errorNote = `Файл не найден: ${doc.filePath}`;
+          const errorNote = `File not found: ${doc.filePath}`;
           archive.append(Buffer.from(errorNote, 'utf-8'), {
             name: `${folder}/${doc.documentNumber || doc.id}_ФАЙЛ_НЕ_НАЙДЕН.txt`,
           });
@@ -179,7 +179,7 @@ async function createZipArchive(
             });
           } catch (err) {
             console.error(
-              `[packageBuilder] Не удалось скачать вложение ${attachment.id}: ${err}`
+              `[packageBuilder] Failed to download attachment ${attachment.id}: ${err}`
             );
           }
         }

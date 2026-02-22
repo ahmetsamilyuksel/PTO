@@ -37,7 +37,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: organizations, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List organizations error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка организаций' });
+    return res.status(500).json({ error: 'Error fetching organizations list' });
   }
 });
 
@@ -63,13 +63,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!org || org.deletedAt) {
-      return res.status(404).json({ error: 'Организация не найдена' });
+      return res.status(404).json({ error: 'Organization not found' });
     }
 
     return res.json(org);
   } catch (error) {
     console.error('Get organization error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении организации' });
+    return res.status(500).json({ error: 'Error fetching organization' });
   }
 });
 
@@ -79,12 +79,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { name, shortName, inn, kpp, ogrn, address, phone, email } = req.body;
 
     if (!name) {
-      return res.status(400).json({ error: 'Обязательное поле: name (наименование организации)' });
+      return res.status(400).json({ error: 'Required field: name' });
     }
 
     if (inn) {
       if (![10, 12].includes(inn.length)) {
-        return res.status(400).json({ error: 'ИНН должен содержать 10 или 12 цифр' });
+        return res.status(400).json({ error: 'Tax ID (INN) must contain 10 or 12 digits' });
       }
     }
 
@@ -104,7 +104,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(org);
   } catch (error) {
     console.error('Create organization error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании организации' });
+    return res.status(500).json({ error: 'Error creating organization' });
   }
 });
 
@@ -113,13 +113,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.organization.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Организация не найдена' });
+      return res.status(404).json({ error: 'Organization not found' });
     }
 
     const { name, shortName, inn, kpp, ogrn, address, phone, email } = req.body;
 
     if (inn && ![10, 12].includes(inn.length)) {
-      return res.status(400).json({ error: 'ИНН должен содержать 10 или 12 цифр' });
+      return res.status(400).json({ error: 'Tax ID (INN) must contain 10 or 12 digits' });
     }
 
     const org = await prisma.organization.update({
@@ -139,7 +139,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(org);
   } catch (error) {
     console.error('Update organization error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении организации' });
+    return res.status(500).json({ error: 'Error updating organization' });
   }
 });
 
@@ -148,7 +148,7 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
   try {
     const existing = await prisma.organization.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Организация не найдена' });
+      return res.status(404).json({ error: 'Organization not found' });
     }
 
     await prisma.organization.update({
@@ -156,10 +156,10 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Организация удалена' });
+    return res.json({ message: 'Organization deleted' });
   } catch (error) {
     console.error('Delete organization error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении организации' });
+    return res.status(500).json({ error: 'Error deleting organization' });
   }
 });
 

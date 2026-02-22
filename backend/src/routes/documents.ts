@@ -256,14 +256,14 @@ router.post('/:id/revision', async (req: AuthRequest, res: Response) => {
         fromStatus: original.status,
         toStatus: original.status,
         performedById: req.userId!,
-        comment: `Создана ревизия ${revision.revision}` + (reason ? `: ${reason}` : ''),
+        comment: `Created revision ${revision.revision}` + (reason ? `: ${reason}` : ''),
       },
     });
 
     return res.status(201).json(revision);
   } catch (error) {
     console.error('Create revision error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании ревизии документа' });
+    return res.status(500).json({ error: 'Error creating document revision' });
   }
 });
 
@@ -272,18 +272,18 @@ router.post('/:id/signatures', async (req: AuthRequest, res: Response) => {
   try {
     const document = await prisma.document.findUnique({ where: { id: req.params.id } });
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     const { personId, signRole, sortOrder } = req.body;
 
     if (!personId || !signRole) {
-      return res.status(400).json({ error: 'Обязательные поля: personId, signRole' });
+      return res.status(400).json({ error: 'Required fields: personId, signRole' });
     }
 
     const person = await prisma.person.findUnique({ where: { id: personId } });
     if (!person || person.deletedAt) {
-      return res.status(404).json({ error: 'Сотрудник не найден' });
+      return res.status(404).json({ error: 'Person not found' });
     }
 
     const signature = await prisma.documentSignature.create({
@@ -302,7 +302,7 @@ router.post('/:id/signatures', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(signature);
   } catch (error) {
     console.error('Add signature error:', error);
-    return res.status(500).json({ error: 'Ошибка при добавлении подписанта' });
+    return res.status(500).json({ error: 'Error adding signatory' });
   }
 });
 
@@ -311,15 +311,15 @@ router.put('/:docId/signatures/:sigId/sign', async (req: AuthRequest, res: Respo
   try {
     const signature = await prisma.documentSignature.findUnique({ where: { id: req.params.sigId } });
     if (!signature || signature.documentId !== req.params.docId) {
-      return res.status(404).json({ error: 'Подпись не найдена' });
+      return res.status(404).json({ error: 'Signature not found' });
     }
 
     if (signature.personId !== req.userId) {
-      return res.status(403).json({ error: 'Можно подписывать только от своего имени' });
+      return res.status(403).json({ error: 'You can only sign on your own behalf' });
     }
 
     if (signature.status !== 'PENDING') {
-      return res.status(400).json({ error: 'Подпись уже обработана' });
+      return res.status(400).json({ error: 'Signature already processed' });
     }
 
     const { comment } = req.body;
@@ -361,7 +361,7 @@ router.put('/:docId/signatures/:sigId/sign', async (req: AuthRequest, res: Respo
             fromStatus: doc.status,
             toStatus: 'SIGNED',
             performedById: req.userId!,
-            comment: 'Все подписи получены',
+            comment: 'All signatures collected',
           },
         });
       }
@@ -370,7 +370,7 @@ router.put('/:docId/signatures/:sigId/sign', async (req: AuthRequest, res: Respo
     return res.json(updated);
   } catch (error) {
     console.error('Sign document error:', error);
-    return res.status(500).json({ error: 'Ошибка при подписании документа' });
+    return res.status(500).json({ error: 'Error signing document' });
   }
 });
 
@@ -379,20 +379,20 @@ router.put('/:docId/signatures/:sigId/reject', async (req: AuthRequest, res: Res
   try {
     const signature = await prisma.documentSignature.findUnique({ where: { id: req.params.sigId } });
     if (!signature || signature.documentId !== req.params.docId) {
-      return res.status(404).json({ error: 'Подпись не найдена' });
+      return res.status(404).json({ error: 'Signature not found' });
     }
 
     if (signature.personId !== req.userId) {
-      return res.status(403).json({ error: 'Можно отклонять только от своего имени' });
+      return res.status(403).json({ error: 'You can only reject on your own behalf' });
     }
 
     if (signature.status !== 'PENDING') {
-      return res.status(400).json({ error: 'Подпись уже обработана' });
+      return res.status(400).json({ error: 'Signature already processed' });
     }
 
     const { comment } = req.body;
     if (!comment) {
-      return res.status(400).json({ error: 'Укажите причину отклонения (comment)' });
+      return res.status(400).json({ error: 'Please provide a rejection reason (comment)' });
     }
 
     const updated = await prisma.documentSignature.update({
@@ -421,7 +421,7 @@ router.put('/:docId/signatures/:sigId/reject', async (req: AuthRequest, res: Res
           fromStatus: doc.status,
           toStatus: 'REVISION_REQUESTED',
           performedById: req.userId!,
-          comment: `Отклонено: ${comment}`,
+          comment: `Rejected: ${comment}`,
         },
       });
     }
@@ -429,7 +429,7 @@ router.put('/:docId/signatures/:sigId/reject', async (req: AuthRequest, res: Res
     return res.json(updated);
   } catch (error) {
     console.error('Reject signature error:', error);
-    return res.status(500).json({ error: 'Ошибка при отклонении подписи' });
+    return res.status(500).json({ error: 'Error rejecting signature' });
   }
 });
 
@@ -438,15 +438,15 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.document.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (existing.lockedAt) {
-      return res.status(400).json({ error: 'Нельзя удалить подписанный документ' });
+      return res.status(400).json({ error: 'Cannot delete a signed document' });
     }
 
     if (!['DRAFT', 'REVISION_REQUESTED'].includes(existing.status)) {
-      return res.status(400).json({ error: 'Можно удалить только черновик или документ на доработке' });
+      return res.status(400).json({ error: 'Only drafts or documents with revision requested can be deleted' });
     }
 
     await prisma.document.update({
@@ -454,10 +454,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Документ удалён' });
+    return res.json({ message: 'Document deleted' });
   } catch (error) {
     console.error('Delete document error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении документа' });
+    return res.status(500).json({ error: 'Error deleting document' });
   }
 });
 
@@ -487,11 +487,11 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
     });
 
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (!document.template) {
-      return res.status(400).json({ error: 'Документу не назначен шаблон для генерации' });
+      return res.status(400).json({ error: 'No template assigned for document generation' });
     }
 
     // Build template data map
@@ -543,13 +543,13 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
     });
 
     return res.json({
-      message: 'Данные для генерации подготовлены',
+      message: 'Generation data prepared',
       document: updatedDoc,
       templateData,
     });
   } catch (error) {
     console.error('Generate document error:', error);
-    return res.status(500).json({ error: 'Ошибка при генерации документа' });
+    return res.status(500).json({ error: 'Error generating document' });
   }
 });
 

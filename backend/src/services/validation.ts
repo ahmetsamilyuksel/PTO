@@ -50,11 +50,11 @@ export async function validateDocumentForSignature(
   });
 
   if (!document) {
-    return { valid: false, errors: ['Документ не найден'], warnings: [] };
+    return { valid: false, errors: ['Document not found'], warnings: [] };
   }
 
   if (document.deletedAt) {
-    return { valid: false, errors: ['Документ удалён'], warnings: [] };
+    return { valid: false, errors: ['Document is deleted'], warnings: [] };
   }
 
   // ─── Проверка статуса ───
@@ -63,7 +63,7 @@ export async function validateDocumentForSignature(
     document.status !== DocumentStatus.DRAFT
   ) {
     warnings.push(
-      `Документ в статусе "${document.status}", ожидался "IN_REVIEW" или "DRAFT"`
+      `Document is in status "${document.status}", expected "IN_REVIEW" or "DRAFT"`
     );
   }
 
@@ -87,7 +87,7 @@ export async function validateDocumentForSignature(
 
   // ─── 7. Подписанты ───
   if (document.signatures.length === 0) {
-    errors.push('Не назначены подписанты документа');
+    errors.push('No signatories assigned to document');
   }
 
   return {
@@ -111,7 +111,7 @@ function validateRequiredFields(
   errors: string[]
 ): void {
   if (!data || typeof data !== 'object') {
-    errors.push('Отсутствуют данные документа (поле data)');
+    errors.push('Missing document data (field: data)');
     return;
   }
 
@@ -176,7 +176,7 @@ function validateRequiredFields(
   for (const field of requiredFields) {
     const value = dataObj[field];
     if (value === undefined || value === null || value === '') {
-      errors.push(`Не заполнено обязательное поле: "${field}"`);
+      errors.push(`Required field not filled: "${field}"`);
     }
   }
 }
@@ -236,9 +236,9 @@ function validateRequiredAttachments(
         requiredLower.includes('фото') ||
         requiredLower.includes('при наличии')
       ) {
-        warnings.push(`Рекомендуется приложить: ${required}`);
+        warnings.push(`Recommended to attach: ${required}`);
       } else {
-        errors.push(`Отсутствует обязательное вложение: ${required}`);
+        errors.push(`Required attachment missing: ${required}`);
       }
     }
   }
@@ -296,7 +296,7 @@ function validateDates(
   // Проверяем дату документа
   if (documentDate > now) {
     errors.push(
-      `Дата документа (${documentDate.toISOString().slice(0, 10)}) не может быть в будущем`
+      `Document date (${documentDate.toISOString().slice(0, 10)}) cannot be in the future`
     );
   }
 
@@ -317,7 +317,7 @@ function validateDates(
 
     if (dateVal > now) {
       errors.push(
-        `Поле "${key}" содержит дату в будущем: ${dateVal.toISOString().slice(0, 10)}`
+        `Field "${key}" contains a future date: ${dateVal.toISOString().slice(0, 10)}`
       );
     }
   }
@@ -331,7 +331,7 @@ function validateDates(
     const end = new Date(String(endDate));
     if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start > end) {
       errors.push(
-        `Дата начала (${start.toISOString().slice(0, 10)}) позже даты окончания (${end.toISOString().slice(0, 10)})`
+        `Start date (${start.toISOString().slice(0, 10)}) is after end date (${end.toISOString().slice(0, 10)})`
       );
     }
   }
@@ -372,11 +372,11 @@ async function validateLinkedDocuments(
 
     if (!referencedDoc) {
       errors.push(
-        `Ссылка на несуществующий документ в поле "${key}": ${value}`
+        `Reference to non-existent document in field "${key}": ${value}`
       );
     } else if (referencedDoc.deletedAt) {
       errors.push(
-        `Ссылка на удалённый документ в поле "${key}": ${value}`
+        `Reference to deleted document in field "${key}": ${value}`
       );
     }
   }
@@ -389,7 +389,7 @@ async function validateLinkedDocuments(
       dataObj['pdRef'];
     if (!hasProjectDoc) {
       errors.push(
-        'АОСР должен содержать ссылку на проектную документацию (projectDocumentation)'
+        'AOSR must contain a reference to project documentation (projectDocumentation)'
       );
     }
   }
@@ -454,8 +454,8 @@ async function validateNoDuplicateAct(
       )
       .join(', ');
     warnings.push(
-      `Найдены похожие акты для той же зоны/работы: ${dupInfo}. ` +
-      'Убедитесь, что это не дубликат.'
+      `Similar acts found for the same zone/work: ${dupInfo}. ` +
+      'Make sure this is not a duplicate.'
     );
   }
 }
@@ -492,7 +492,7 @@ function validateMaterialCertificates(
   const usages = document.workItem.materialUsages;
   if (usages.length === 0) {
     warnings.push(
-      'Для данного вида работ не указаны использованные материалы'
+      'No materials specified for this type of work'
     );
     return;
   }
@@ -500,7 +500,7 @@ function validateMaterialCertificates(
   for (const usage of usages) {
     if (usage.material.certificates.length === 0) {
       errors.push(
-        `Материал "${usage.material.name}" не имеет сертификатов/паспортов качества`
+        `Material "${usage.material.name}" has no quality certificates/passports`
       );
     }
   }

@@ -17,7 +17,7 @@ const upload = multer({
     if (config.upload.allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error(`Недопустимый тип файла: ${file.mimetype}`));
+      cb(new Error(`Invalid file type: ${file.mimetype}`));
     }
   },
 });
@@ -37,7 +37,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     // Require at least one filter
     if (Object.keys(where).length === 0) {
       return res.status(400).json({
-        error: 'Укажите хотя бы один фильтр: documentId, journalEntryId, testProtocolId, incomingControlId',
+        error: 'At least one filter required: documentId, journalEntryId, testProtocolId, incomingControlId',
       });
     }
 
@@ -49,7 +49,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: attachments });
   } catch (error) {
     console.error('List attachments error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка вложений' });
+    return res.status(500).json({ error: 'Error fetching attachments list' });
   }
 });
 
@@ -61,13 +61,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!attachment) {
-      return res.status(404).json({ error: 'Вложение не найдено' });
+      return res.status(404).json({ error: 'Attachment not found' });
     }
 
     return res.json(attachment);
   } catch (error) {
     console.error('Get attachment error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении вложения' });
+    return res.status(500).json({ error: 'Error fetching attachment' });
   }
 });
 
@@ -79,7 +79,7 @@ router.get('/:id/url', async (req: AuthRequest, res: Response) => {
     });
 
     if (!attachment) {
-      return res.status(404).json({ error: 'Вложение не найдено' });
+      return res.status(404).json({ error: 'Attachment not found' });
     }
 
     const expiry = parseInt(req.query.expiry as string) || 3600;
@@ -88,7 +88,7 @@ router.get('/:id/url', async (req: AuthRequest, res: Response) => {
     return res.json({ url, expiresIn: expiry });
   } catch (error) {
     console.error('Get attachment URL error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении ссылки на файл' });
+    return res.status(500).json({ error: 'Error fetching file URL' });
   }
 });
 
@@ -100,7 +100,7 @@ router.get('/:id/download', async (req: AuthRequest, res: Response) => {
     });
 
     if (!attachment) {
-      return res.status(404).json({ error: 'Вложение не найдено' });
+      return res.status(404).json({ error: 'Attachment not found' });
     }
 
     const buffer = await downloadFile(attachment.filePath);
@@ -112,7 +112,7 @@ router.get('/:id/download', async (req: AuthRequest, res: Response) => {
     return res.send(buffer);
   } catch (error) {
     console.error('Download attachment error:', error);
-    return res.status(500).json({ error: 'Ошибка при скачивании файла' });
+    return res.status(500).json({ error: 'Error downloading file' });
   }
 });
 
@@ -121,7 +121,7 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
   try {
     const file = req.file;
     if (!file) {
-      return res.status(400).json({ error: 'Файл не предоставлен' });
+      return res.status(400).json({ error: 'No file provided' });
     }
 
     const { documentId, journalEntryId, testProtocolId, incomingControlId, category, description } = req.body;
@@ -129,7 +129,7 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
     // Validate at least one parent reference
     if (!documentId && !journalEntryId && !testProtocolId && !incomingControlId) {
       return res.status(400).json({
-        error: 'Укажите привязку: documentId, journalEntryId, testProtocolId или incomingControlId',
+        error: 'Specify a link: documentId, journalEntryId, testProtocolId, or incomingControlId',
       });
     }
 
@@ -137,25 +137,25 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
     if (documentId) {
       const doc = await prisma.document.findUnique({ where: { id: documentId } });
       if (!doc || doc.deletedAt) {
-        return res.status(404).json({ error: 'Документ не найден' });
+        return res.status(404).json({ error: 'Document not found' });
       }
     }
     if (journalEntryId) {
       const entry = await prisma.journalEntry.findUnique({ where: { id: journalEntryId } });
       if (!entry) {
-        return res.status(404).json({ error: 'Запись журнала не найдена' });
+        return res.status(404).json({ error: 'Journal entry not found' });
       }
     }
     if (testProtocolId) {
       const protocol = await prisma.testProtocol.findUnique({ where: { id: testProtocolId } });
       if (!protocol) {
-        return res.status(404).json({ error: 'Протокол испытаний не найден' });
+        return res.status(404).json({ error: 'Test protocol not found' });
       }
     }
     if (incomingControlId) {
       const control = await prisma.incomingControl.findUnique({ where: { id: incomingControlId } });
       if (!control) {
-        return res.status(404).json({ error: 'Запись входного контроля не найдена' });
+        return res.status(404).json({ error: 'Incoming control record not found' });
       }
     }
 
@@ -195,11 +195,11 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
 
     return res.status(201).json(attachment);
   } catch (error: any) {
-    if (error.message?.includes('Недопустимый тип файла')) {
+    if (error.message?.includes('Invalid file type')) {
       return res.status(400).json({ error: error.message });
     }
     console.error('Upload attachment error:', error);
-    return res.status(500).json({ error: 'Ошибка при загрузке файла' });
+    return res.status(500).json({ error: 'Error uploading file' });
   }
 });
 
@@ -208,14 +208,14 @@ router.post('/upload-multiple', upload.array('files', 10), async (req: AuthReque
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'Файлы не предоставлены' });
+      return res.status(400).json({ error: 'No files provided' });
     }
 
     const { documentId, journalEntryId, testProtocolId, incomingControlId, category } = req.body;
 
     if (!documentId && !journalEntryId && !testProtocolId && !incomingControlId) {
       return res.status(400).json({
-        error: 'Укажите привязку: documentId, journalEntryId, testProtocolId или incomingControlId',
+        error: 'Specify a link: documentId, journalEntryId, testProtocolId, or incomingControlId',
       });
     }
 
@@ -256,7 +256,7 @@ router.post('/upload-multiple', upload.array('files', 10), async (req: AuthReque
     return res.status(201).json({ data: attachments, count: attachments.length });
   } catch (error) {
     console.error('Upload multiple attachments error:', error);
-    return res.status(500).json({ error: 'Ошибка при загрузке файлов' });
+    return res.status(500).json({ error: 'Error uploading files' });
   }
 });
 
@@ -265,7 +265,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.attachment.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Вложение не найдено' });
+      return res.status(404).json({ error: 'Attachment not found' });
     }
 
     const { description, category } = req.body;
@@ -281,7 +281,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(attachment);
   } catch (error) {
     console.error('Update attachment error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении вложения' });
+    return res.status(500).json({ error: 'Error updating attachment' });
   }
 });
 
@@ -290,14 +290,14 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.attachment.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Вложение не найдено' });
+      return res.status(404).json({ error: 'Attachment not found' });
     }
 
     // Check if parent document is locked
     if (existing.documentId) {
       const doc = await prisma.document.findUnique({ where: { id: existing.documentId } });
       if (doc?.lockedAt) {
-        return res.status(400).json({ error: 'Нельзя удалить вложение подписанного документа' });
+        return res.status(400).json({ error: 'Cannot delete attachment of a signed document' });
       }
     }
 
@@ -311,10 +311,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     // Delete from database
     await prisma.attachment.delete({ where: { id: req.params.id } });
 
-    return res.json({ message: 'Вложение удалено' });
+    return res.json({ message: 'Attachment deleted' });
   } catch (error) {
     console.error('Delete attachment error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении вложения' });
+    return res.status(500).json({ error: 'Error deleting attachment' });
   }
 });
 

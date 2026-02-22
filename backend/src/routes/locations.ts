@@ -10,7 +10,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const { projectId, parentId, locationType, search, flat } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const where: any = { projectId: projectId as string, deletedAt: null };
@@ -62,7 +62,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: locations });
   } catch (error) {
     console.error('List locations error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка локаций' });
+    return res.status(500).json({ error: 'Error fetching locations list' });
   }
 });
 
@@ -82,13 +82,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!location || location.deletedAt) {
-      return res.status(404).json({ error: 'Локация не найдена' });
+      return res.status(404).json({ error: 'Location not found' });
     }
 
     return res.json(location);
   } catch (error) {
     console.error('Get location error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении локации' });
+    return res.status(500).json({ error: 'Error fetching location' });
   }
 });
 
@@ -98,18 +98,18 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { projectId, name, locationType, parentId, sortOrder } = req.body;
 
     if (!projectId || !name || !locationType) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, name, locationType' });
+      return res.status(400).json({ error: 'Required fields: projectId, name, locationType' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     if (parentId) {
       const parent = await prisma.location.findUnique({ where: { id: parentId } });
       if (!parent || parent.deletedAt || parent.projectId !== projectId) {
-        return res.status(404).json({ error: 'Родительская локация не найдена' });
+        return res.status(404).json({ error: 'Parent location not found' });
       }
     }
 
@@ -129,7 +129,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(location);
   } catch (error) {
     console.error('Create location error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании локации' });
+    return res.status(500).json({ error: 'Error creating location' });
   }
 });
 
@@ -139,12 +139,12 @@ router.post('/bulk', async (req: AuthRequest, res: Response) => {
     const { projectId, locations } = req.body;
 
     if (!projectId || !Array.isArray(locations) || locations.length === 0) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, locations (массив)' });
+      return res.status(400).json({ error: 'Required fields: projectId, locations (array)' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const created = await prisma.$transaction(async (tx) => {
@@ -176,7 +176,7 @@ router.post('/bulk', async (req: AuthRequest, res: Response) => {
     return res.status(201).json({ data: created, count: created.length });
   } catch (error) {
     console.error('Bulk create locations error:', error);
-    return res.status(500).json({ error: 'Ошибка при массовом создании локаций' });
+    return res.status(500).json({ error: 'Error creating locations in bulk' });
   }
 });
 
@@ -185,14 +185,14 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.location.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Локация не найдена' });
+      return res.status(404).json({ error: 'Location not found' });
     }
 
     const { name, locationType, parentId, sortOrder } = req.body;
 
     // Prevent circular parent reference
     if (parentId === req.params.id) {
-      return res.status(400).json({ error: 'Локация не может быть родителем самой себя' });
+      return res.status(400).json({ error: 'Location cannot be its own parent' });
     }
 
     const location = await prisma.location.update({
@@ -211,7 +211,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(location);
   } catch (error) {
     console.error('Update location error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении локации' });
+    return res.status(500).json({ error: 'Error updating location' });
   }
 });
 
@@ -224,11 +224,11 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Локация не найдена' });
+      return res.status(404).json({ error: 'Location not found' });
     }
 
     if (existing._count.children > 0) {
-      return res.status(400).json({ error: 'Нельзя удалить локацию с дочерними элементами' });
+      return res.status(400).json({ error: 'Cannot delete a location with child elements' });
     }
 
     await prisma.location.update({
@@ -236,10 +236,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Локация удалена' });
+    return res.json({ message: 'Location deleted' });
   } catch (error) {
     console.error('Delete location error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении локации' });
+    return res.status(500).json({ error: 'Error deleting location' });
   }
 });
 

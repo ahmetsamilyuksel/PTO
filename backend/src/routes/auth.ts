@@ -13,22 +13,22 @@ router.post('/register', async (req: Request, res: Response) => {
     const { email, password, fio, position, phone, role, organizationId } = req.body;
 
     if (!email || !password || !fio) {
-      return res.status(400).json({ error: 'Обязательные поля: email, password, fio' });
+      return res.status(400).json({ error: 'Required fields: email, password, fio' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Пароль должен содержать минимум 6 символов' });
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const existing = await prisma.person.findUnique({ where: { email } });
     if (existing) {
-      return res.status(409).json({ error: 'Пользователь с таким email уже существует' });
+      return res.status(409).json({ error: 'A user with this email already exists' });
     }
 
     if (organizationId) {
       const org = await prisma.organization.findUnique({ where: { id: organizationId } });
       if (!org) {
-        return res.status(404).json({ error: 'Организация не найдена' });
+        return res.status(404).json({ error: 'Organization not found' });
       }
     }
 
@@ -65,7 +65,7 @@ router.post('/register', async (req: Request, res: Response) => {
     return res.status(201).json({ token, user: person });
   } catch (error) {
     console.error('Register error:', error);
-    return res.status(500).json({ error: 'Ошибка при регистрации' });
+    return res.status(500).json({ error: 'Error during registration' });
   }
 });
 
@@ -75,7 +75,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Укажите email и пароль' });
+      return res.status(400).json({ error: 'Please provide email and password' });
     }
 
     const person = await prisma.person.findUnique({
@@ -84,12 +84,12 @@ router.post('/login', async (req: Request, res: Response) => {
     });
 
     if (!person || person.deletedAt) {
-      return res.status(401).json({ error: 'Неверный email или пароль' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     const valid = await bcrypt.compare(password, person.passwordHash);
     if (!valid) {
-      return res.status(401).json({ error: 'Неверный email или пароль' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     const token = jwt.sign(
@@ -113,7 +113,7 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Ошибка при входе в систему' });
+    return res.status(500).json({ error: 'Error during login' });
   }
 });
 
@@ -133,7 +133,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!person || person.deletedAt) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     return res.json({
@@ -155,7 +155,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Me error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении профиля' });
+    return res.status(500).json({ error: 'Error fetching profile' });
   }
 });
 
@@ -191,7 +191,7 @@ router.put('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     return res.json(person);
   } catch (error) {
     console.error('Update profile error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении профиля' });
+    return res.status(500).json({ error: 'Error updating profile' });
   }
 });
 
@@ -201,21 +201,21 @@ router.put('/change-password', authMiddleware, async (req: AuthRequest, res: Res
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Укажите текущий и новый пароль' });
+      return res.status(400).json({ error: 'Please provide current and new password' });
     }
 
     if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Новый пароль должен содержать минимум 6 символов' });
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
     }
 
     const person = await prisma.person.findUnique({ where: { id: req.userId } });
     if (!person) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     const valid = await bcrypt.compare(currentPassword, person.passwordHash);
     if (!valid) {
-      return res.status(401).json({ error: 'Неверный текущий пароль' });
+      return res.status(401).json({ error: 'Invalid current password' });
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
@@ -224,10 +224,10 @@ router.put('/change-password', authMiddleware, async (req: AuthRequest, res: Res
       data: { passwordHash },
     });
 
-    return res.json({ message: 'Пароль успешно изменён' });
+    return res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    return res.status(500).json({ error: 'Ошибка при смене пароля' });
+    return res.status(500).json({ error: 'Error changing password' });
   }
 });
 
