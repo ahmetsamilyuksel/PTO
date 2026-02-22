@@ -133,15 +133,15 @@ const Documents: React.FC = () => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const params: Record<string, unknown> = { page, pageSize };
-      if (filterType) params.type = filterType;
+      const params: Record<string, unknown> = { projectId, page, limit: pageSize };
+      if (filterType) params.documentType = filterType;
       if (filterStatus) params.status = filterStatus;
       if (filterLocation) params.locationId = filterLocation;
       if (filterDateRange) {
         params.dateFrom = filterDateRange[0].format('YYYY-MM-DD');
         params.dateTo = filterDateRange[1].format('YYYY-MM-DD');
       }
-      const response = await apiClient.get(`/projects/${projectId}/documents`, { params });
+      const response = await apiClient.get('/documents', { params });
       const data = response.data;
       setDocuments(data.data || data || []);
       setTotal(data.total || 0);
@@ -156,9 +156,9 @@ const Documents: React.FC = () => {
     if (!projectId) return;
     try {
       const [locsRes, wiRes, tmplRes] = await Promise.all([
-        apiClient.get(`/projects/${projectId}/locations`).catch(() => ({ data: [] })),
-        apiClient.get(`/projects/${projectId}/work-items`).catch(() => ({ data: [] })),
-        apiClient.get('/document-templates').catch(() => ({ data: [] })),
+        apiClient.get('/locations', { params: { projectId } }).catch(() => ({ data: [] })),
+        apiClient.get('/work-items', { params: { projectId } }).catch(() => ({ data: [] })),
+        apiClient.get('/templates').catch(() => ({ data: [] })),
       ]);
       setLocations(locsRes.data.data || locsRes.data || []);
       setWorkItems(wiRes.data.data || wiRes.data || []);
@@ -210,12 +210,16 @@ const Documents: React.FC = () => {
       setCreateLoading(true);
 
       const payload = {
-        ...values,
         projectId,
-        formData: values.formData || {},
+        documentType: values.type,
+        title: values.title,
+        locationId: values.locationId,
+        workItemId: values.workItemId,
+        templateId: values.templateId,
+        data: values.formData || {},
       };
 
-      await apiClient.post(`/projects/${projectId}/documents`, payload);
+      await apiClient.post('/documents', payload);
       message.success('Документ создан');
       setCreateModalVisible(false);
       createForm.resetFields();
@@ -235,7 +239,7 @@ const Documents: React.FC = () => {
     if (!selectedDocument) return;
     try {
       const values = await editForm.validateFields();
-      await apiClient.patch(`/documents/${selectedDocument.id}`, values);
+      await apiClient.put(`/documents/${selectedDocument.id}`, values);
       message.success('Документ обновлён');
       setEditMode(false);
       openDocumentDetail(selectedDocument.id);
@@ -250,8 +254,16 @@ const Documents: React.FC = () => {
     if (!selectedDocument) return;
     setActionLoading(true);
     try {
-      await apiClient.post(`/documents/${selectedDocument.id}/transition`, {
-        action: actionType,
+      // Map action types to target status
+      const actionToStatus: Record<string, string> = {
+        SUBMIT: 'IN_REVIEW',
+        APPROVE: 'PENDING_SIGNATURE',
+        SIGN: 'SIGNED',
+        REJECT: 'REVISION_REQUESTED',
+      };
+      await apiClient.post('/workflow/transition', {
+        documentId: selectedDocument.id,
+        toStatus: actionToStatus[actionType] || actionType,
         comment: actionComment,
       });
       message.success('Действие выполнено');

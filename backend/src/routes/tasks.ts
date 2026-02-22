@@ -314,6 +314,72 @@ router.put('/:id/assignments/:assignmentId', async (req: Request, res: Response)
   }
 });
 
+// POST /api/tasks/:id/message - Add a message/comment to a task
+router.post('/:id/message', async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'text is required' });
+    }
+
+    const task = await prisma.task.findUnique({ where: { id: req.params.id } });
+    if (!task || task.deletedAt) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const user = await prisma.person.findUnique({
+      where: { id: userId },
+      select: { id: true, fio: true, role: true },
+    });
+
+    // Parse existing notes as JSON array, or start new
+    let messages: any[] = [];
+    if (task.notes) {
+      try { messages = JSON.parse(task.notes); } catch { messages = []; }
+    }
+
+    messages.push({
+      id: `msg_${Date.now()}`,
+      authorId: userId,
+      authorName: user?.fio || 'Unknown',
+      text,
+      createdAt: new Date().toISOString(),
+    });
+
+    await prisma.task.update({
+      where: { id: req.params.id },
+      data: { notes: JSON.stringify(messages) },
+    });
+
+    res.status(201).json({ messages });
+  } catch (error) {
+    console.error('Error adding message:', error);
+    res.status(500).json({ error: 'Failed to add message' });
+  }
+});
+
+// GET /api/tasks/:id/messages - Get task messages
+router.get('/:id/messages', async (req: Request, res: Response) => {
+  try {
+    const task = await prisma.task.findUnique({ where: { id: req.params.id } });
+    if (!task || task.deletedAt) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    let messages: any[] = [];
+    if (task.notes) {
+      try { messages = JSON.parse(task.notes); } catch { messages = []; }
+    }
+
+    res.json({ messages });
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
 // DELETE /api/tasks/:id (soft delete)
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
