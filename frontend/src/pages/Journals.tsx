@@ -200,13 +200,13 @@ const Journals: React.FC = () => {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col><Title level={3} style={{ margin: 0 }}>{t.journal?.title}</Title></Col>
-        <Col><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.app.create}</Button></Col>
+      <Row justify="space-between" align="middle" gutter={[16, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.journal?.title}</Title></Col>
+        <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.app.create}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={journals} rowKey="id" loading={loading} pagination={false} />
+      <Table columns={columns} dataSource={journals} rowKey="id" loading={loading} pagination={false} scroll={{ x: 800 }} />
 
-      <Modal title={t.app.create} open={createModalVisible} onOk={handleCreateJournal} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width={600}>
+      <Modal title={t.app.create} open={createModalVisible} onOk={handleCreateJournal} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={createForm} layout="vertical">
           <Form.Item name="type" label={t.app.type} rules={[{ required: true, message: t.app.required }]}>
             <Select options={Object.entries(journalTypeLabels).map(([value, label]) => ({ value, label }))} />
@@ -216,9 +216,9 @@ const Journals: React.FC = () => {
         </Form>
       </Modal>
 
-      <Drawer title={selectedJournal ? selectedJournal.title : t.journal?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedJournal(null); setEntries([]); }} width={900}
+      <Drawer title={selectedJournal ? selectedJournal.title : t.journal?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedJournal(null); setEntries([]); }} width="95%" styles={{ wrapper: { maxWidth: 900 } }}
         extra={selectedJournal && (
-          <Space>
+          <Space wrap>
             <Button icon={<PlusOutlined />} type="primary" onClick={() => setEntryModalVisible(true)} disabled={selectedJournal.status !== 'ACTIVE'}>{t.journal?.addEntry}</Button>
             <Button icon={<DownloadOutlined />} onClick={() => handleExportPdf(selectedJournal.id)}>{t.journal?.exportPdf}</Button>
           </Space>
@@ -226,7 +226,7 @@ const Journals: React.FC = () => {
         <Spin spinning={detailLoading}>
           {selectedJournal && (
             <>
-              <Descriptions bordered column={2} size="small" style={{ marginBottom: 24 }}>
+              <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small" style={{ marginBottom: 24 }}>
                 <Descriptions.Item label={t.app.type}>{journalTypeLabels[selectedJournal.journalType] || selectedJournal.journalType}</Descriptions.Item>
                 <Descriptions.Item label={t.app.status}><Tag color={journalStatusLabels[selectedJournal.status]?.color}>{journalStatusLabels[selectedJournal.status]?.label}</Tag></Descriptions.Item>
                 <Descriptions.Item label={t.doc?.number}>—</Descriptions.Item>
@@ -235,18 +235,18 @@ const Journals: React.FC = () => {
                 <Descriptions.Item label={t.project?.plannedEndDate || 'Bitiş'}>{selectedJournal.endDate ? dayjs(selectedJournal.endDate).format('DD.MM.YYYY') : '—'}</Descriptions.Item>
               </Descriptions>
               <Divider orientation="left">{t.journal?.entries}</Divider>
-              <Table columns={entryColumns} dataSource={entries} rowKey="id" size="small" pagination={{ current: entriesPage, pageSize: 20, total: entriesTotal, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (pg) => { if (selectedJournal) fetchEntries(selectedJournal.id, pg); } }} />
+              <Table columns={entryColumns} dataSource={entries} rowKey="id" size="small" scroll={{ x: 700 }} pagination={{ current: entriesPage, pageSize: 20, total: entriesTotal, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (pg) => { if (selectedJournal) fetchEntries(selectedJournal.id, pg); } }} />
             </>
           )}
         </Spin>
       </Drawer>
 
-      <Modal title={t.journal?.addEntry} open={entryModalVisible} onOk={handleAddEntry} onCancel={() => { setEntryModalVisible(false); entryForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={entryLoading} width={700}>
+      <Modal title={t.journal?.addEntry} open={entryModalVisible} onOk={handleAddEntry} onCancel={() => { setEntryModalVisible(false); entryForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={entryLoading} width="95%" style={{ maxWidth: 700 }}>
         <Form form={entryForm} layout="vertical">
           <Row gutter={16}>
-            <Col span={8}><Form.Item name="date" label={t.app.date} rules={[{ required: true }]} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-            <Col span={8}><Form.Item name="weather" label={t.journal?.weather}><Select allowClear options={weatherOptions} /></Form.Item></Col>
-            <Col span={8}><Form.Item name="temperature" label={t.journal?.temperature}><Input /></Form.Item></Col>
+            <Col xs={24} sm={8}><Form.Item name="date" label={t.app.date} rules={[{ required: true }]} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+            <Col xs={12} sm={8}><Form.Item name="weather" label={t.journal?.weather}><Select allowClear options={weatherOptions} /></Form.Item></Col>
+            <Col xs={12} sm={8}><Form.Item name="temperature" label={t.journal?.temperature}><Input /></Form.Item></Col>
           </Row>
           <Form.Item name="crewCount" label={t.journal?.crew}><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
           <Form.Item name="workDescription" label={t.journal?.workDescription} rules={[{ required: true, message: t.app.required }]}><TextArea rows={4} /></Form.Item>

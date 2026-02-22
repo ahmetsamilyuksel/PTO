@@ -1,0 +1,82 @@
+/* Mobile Responsive Overrides */
+
+/* Tables: horizontal scroll on mobile */
+@media (max-width: 768px) {
+  .ant-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ant-table {
+    min-width: 600px;
+  }
+
+  /* Modals: full width on mobile */
+  .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto !important;
+    top: 8px !important;
+  }
+
+  .ant-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Drawers: full width on mobile */
+  .ant-drawer-content-wrapper {
+    width: 100vw !important;
+  }
+
+  /* Steps: compact on mobile */
+  .ant-steps-item-description {
+    display: none !important;
+  }
+
+  /* Cards: reduce padding */
+  .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .ant-card-head {
+    padding: 0 12px !important;
+    min-height: 40px !important;
+  }
+
+  /* Descriptions: single column on mobile */
+  .ant-descriptions-view table {
+    display: block;
+  }
+
+  /* DatePicker range: allow wrapping */
+  .ant-picker-range {
+    width: 100% !important;
+  }
+
+  /* Buttons in Space: allow wrapping */
+  .ant-space-wrap {
+    gap: 8px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .ant-table {
+    min-width: 500px;
+  }
+
+  .ant-modal {
+    max-width: 100vw !important;
+    margin: 0 !important;
+    top: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ant-modal-content {
+    border-radius: 0 !important;
+  }
+
+  .ant-steps-item-title {
+    font-size: 12px !important;
+  }
+}

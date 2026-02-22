@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Dropdown, Typography, Space, theme } from 'antd';
+import { Layout, Menu, Button, Dropdown, Typography, Space, theme, Grid, Drawer } from 'antd';
 import {
   DashboardOutlined,
   ProjectOutlined,
@@ -29,15 +29,19 @@ import { useI18n, languages, Language } from '../i18n';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { id: projectId } = useParams();
   const { t, lang, setLang } = useI18n();
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -53,6 +57,13 @@ const AppLayout: React.FC = () => {
     }
     fetchProjects();
   }, []);
+
+  // Close mobile drawer on navigation
+  useEffect(() => {
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
+  }, [location.pathname]);
 
   const fetchProjects = async () => {
     try {
@@ -221,56 +232,81 @@ const AppLayout: React.FC = () => {
 
   const selectedKeys = [location.pathname];
 
-  return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={260}
+  const menuContent = (
+    <>
+      <div
         style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isMobile || !collapsed ? 'flex-start' : 'center',
+          padding: isMobile || !collapsed ? '0 24px' : '0',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
         }}
       >
-        <div
+        <Text
+          strong
           style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? '0' : '0 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            color: '#fff',
+            fontSize: isMobile ? 18 : collapsed ? 14 : 18,
+            whiteSpace: 'nowrap',
           }}
         >
-          <Text
-            strong
-            style={{
-              color: '#fff',
-              fontSize: collapsed ? 14 : 18,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {collapsed ? 'PTO' : t.app.title}
-          </Text>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={selectedKeys}
-          defaultOpenKeys={['projects-group', `project-${activeProjectId}-menu`, `project-${activeProjectId}-ops`]}
-          items={buildMenuItems()}
-          onClick={handleMenuClick}
-        />
-      </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 260, transition: 'margin-left 0.2s' }}>
+          {!isMobile && collapsed ? 'PTO' : t.app.title}
+        </Text>
+      </div>
+      <Menu
+        theme="dark"
+        mode="inline"
+        selectedKeys={selectedKeys}
+        defaultOpenKeys={['projects-group', `project-${activeProjectId}-menu`, `project-${activeProjectId}-ops`]}
+        items={buildMenuItems()}
+        onClick={handleMenuClick}
+      />
+    </>
+  );
+
+  const siderWidth = collapsed ? 80 : 260;
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={260}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+          }}
+        >
+          {menuContent}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          placement="left"
+          open={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+          width={280}
+          styles={{ body: { padding: 0, background: '#001529' }, header: { display: 'none' } }}
+        >
+          {menuContent}
+        </Drawer>
+      )}
+
+      <Layout style={{ marginLeft: isMobile ? 0 : siderWidth, transition: 'margin-left 0.2s' }}>
         <Header
           style={{
-            padding: '0 24px',
+            padding: isMobile ? '0 12px' : '0 24px',
             background: colorBgContainer,
             display: 'flex',
             alignItems: 'center',
@@ -283,11 +319,11 @@ const AppLayout: React.FC = () => {
         >
           <Button
             type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
+            icon={isMobile ? <MenuUnfoldOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => isMobile ? setMobileDrawerOpen(true) : setCollapsed(!collapsed)}
             style={{ fontSize: 16, width: 48, height: 48 }}
           />
-          <Space size="middle">
+          <Space size={isMobile ? 'small' : 'middle'}>
             <Dropdown
               menu={{
                 items: langMenuItems,
@@ -296,8 +332,8 @@ const AppLayout: React.FC = () => {
               }}
               placement="bottomRight"
             >
-              <Button type="text" icon={<GlobalOutlined />}>
-                {languages[lang].flag} {languages[lang].label}
+              <Button type="text" icon={<GlobalOutlined />} size={isMobile ? 'small' : 'middle'}>
+                {isMobile ? languages[lang].flag : `${languages[lang].flag} ${languages[lang].label}`}
               </Button>
             </Dropdown>
             <Dropdown
@@ -307,16 +343,16 @@ const AppLayout: React.FC = () => {
               }}
               placement="bottomRight"
             >
-              <Button type="text" icon={<UserOutlined />}>
-                {currentUser?.fio || currentUser?.fullName || t.auth.login}
+              <Button type="text" icon={<UserOutlined />} size={isMobile ? 'small' : 'middle'}>
+                {isMobile ? '' : (currentUser?.fio || currentUser?.fullName || t.auth.login)}
               </Button>
             </Dropdown>
           </Space>
         </Header>
         <Content
           style={{
-            margin: 24,
-            padding: 24,
+            margin: isMobile ? 8 : 24,
+            padding: isMobile ? 12 : 24,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
             minHeight: 280,

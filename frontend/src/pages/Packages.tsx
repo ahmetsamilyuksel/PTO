@@ -181,15 +181,16 @@ const Packages: React.FC = () => {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col><Title level={3} style={{ margin: 0 }}>{t.package?.title}</Title></Col>
-        <Col><Button type="primary" icon={<PlusOutlined />} onClick={() => setWizardVisible(true)}>{t.package?.create}</Button></Col>
+      <Row justify="space-between" align="middle" gutter={[16, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.package?.title}</Title></Col>
+        <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setWizardVisible(true)}>{t.package?.create}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={packages} rowKey="id" loading={loading} pagination={false} />
+      <Table columns={columns} dataSource={packages} rowKey="id" loading={loading} pagination={false} scroll={{ x: 700 }} />
 
       <Modal title={t.package?.create} open={wizardVisible}
         onCancel={() => { setWizardVisible(false); wizardForm.resetFields(); setWizardStep(0); setSelectedDocIds([]); setAvailableDocs([]); }}
-        width={800}
+        width="95%"
+        style={{ maxWidth: 800 }}
         footer={
           <Space>
             {wizardStep > 0 && <Button onClick={() => setWizardStep(wizardStep - 1)}>{t.app.back}</Button>}
@@ -206,8 +207,8 @@ const Packages: React.FC = () => {
           <Form form={wizardForm} layout="vertical" style={{ maxWidth: 500 }}>
             <Form.Item name="name" label={t.package?.name} rules={[{ required: true, message: t.app.required }]}><Input /></Form.Item>
             <Row gutter={16}>
-              <Col span={12}><Form.Item name="periodStart" label={t.package?.periodFrom}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-              <Col span={12}><Form.Item name="periodEnd" label={t.package?.periodTo}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+              <Col xs={12} sm={12}><Form.Item name="periodStart" label={t.package?.periodFrom}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+              <Col xs={12} sm={12}><Form.Item name="periodEnd" label={t.package?.periodTo}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
             </Row>
             <Form.Item name="description" label={t.app.description}><Input.TextArea rows={2} /></Form.Item>
           </Form>
@@ -245,9 +246,9 @@ const Packages: React.FC = () => {
       </Modal>
 
       <Drawer title={selectedPackage ? selectedPackage.name : t.package?.title} open={detailDrawerVisible}
-        onClose={() => { setDetailDrawerVisible(false); setSelectedPackage(null); }} width={700}
+        onClose={() => { setDetailDrawerVisible(false); setSelectedPackage(null); }} width="95%" styles={{ wrapper: { maxWidth: 700 } }}
         extra={selectedPackage && (
-          <Space>
+          <Space wrap>
             <Button icon={<FileZipOutlined />} onClick={() => handleDownloadZip(selectedPackage.id)}>{t.package?.download}</Button>
             <Button icon={<OrderedListOutlined />} onClick={() => handleDownloadInventory(selectedPackage.id)}>{t.package?.inventory}</Button>
           </Space>
@@ -255,7 +256,7 @@ const Packages: React.FC = () => {
         <Spin spinning={detailLoading}>
           {selectedPackage && (
             <>
-              <Descriptions bordered column={2} size="small" style={{ marginBottom: 24 }}>
+              <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small" style={{ marginBottom: 24 }}>
                 <Descriptions.Item label={t.app.name} span={2}>{selectedPackage.name}</Descriptions.Item>
                 <Descriptions.Item label={t.app.status}><Tag color={packageStatusLabels[selectedPackage.status]?.color}>{packageStatusLabels[selectedPackage.status]?.label}</Tag></Descriptions.Item>
                 <Descriptions.Item label={t.package?.period}>{(selectedPackage as any).periodFrom ? `${dayjs((selectedPackage as any).periodFrom).format('DD.MM.YYYY')} — ${(selectedPackage as any).periodTo ? dayjs((selectedPackage as any).periodTo).format('DD.MM.YYYY') : '...'}` : t.app.noData}</Descriptions.Item>

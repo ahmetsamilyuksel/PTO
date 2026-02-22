@@ -250,8 +250,8 @@ const Corrections: React.FC = () => {
       <Card
         title={t.corrections?.title || 'Document Corrections'}
         extra={
-          <Space>
-            <Select placeholder={t.app.filter} allowClear style={{ width: 160 }}
+          <Space wrap>
+            <Select placeholder={t.app.filter} allowClear style={{ minWidth: 140 }}
               onChange={(v) => { setFilterStatus(v); setPage(1); }}
               options={Object.entries(statusLabels).map(([k, v]) => ({ value: k, label: v }))}
             />
@@ -262,6 +262,7 @@ const Corrections: React.FC = () => {
         }
       >
         <Table columns={columns} dataSource={corrections} rowKey="id" loading={loading}
+          scroll={{ x: 800 }}
           pagination={{ current: page, total, pageSize: 20, onChange: setPage }}
         />
       </Card>
@@ -272,7 +273,8 @@ const Corrections: React.FC = () => {
         open={modalVisible}
         onCancel={() => { setModalVisible(false); form.resetFields(); }}
         onOk={() => form.submit()}
-        width={700}
+        width="95%"
+        style={{ maxWidth: 700 }}
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item name="documentId" label={t.corrections?.document || 'Document'} rules={[{ required: true }]}>
@@ -284,12 +286,12 @@ const Corrections: React.FC = () => {
             />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="errorType" label={t.corrections?.errorType || 'Error Type'} rules={[{ required: true }]}>
                 <Select options={Object.entries(errorTypeLabels).map(([k, v]) => ({ value: k, label: v }))} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="severity" label={t.corrections?.severity || 'Severity'} initialValue="MEDIUM">
                 <Select options={Object.entries(severityLabels).map(([k, v]) => ({ value: k, label: v }))} />
               </Form.Item>
@@ -299,7 +301,7 @@ const Corrections: React.FC = () => {
             <TextArea rows={4} />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="assignedToId" label={t.corrections?.assignedTo || 'Assign To'}>
                 <Select allowClear>
                   {members.map((m: any) => (
@@ -308,7 +310,7 @@ const Corrections: React.FC = () => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="dueDate" label={t.tasks?.dueDate || 'Due Date'}>
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
@@ -322,18 +324,19 @@ const Corrections: React.FC = () => {
         title={t.corrections?.detail || 'Correction Detail'}
         open={detailVisible}
         onCancel={() => { setDetailVisible(false); setSelectedCorrection(null); }}
-        width={700}
+        width="95%"
+        style={{ maxWidth: 700 }}
         footer={null}
       >
         {selectedCorrection && (
           <div>
-            <Row gutter={16}>
-              <Col span={12}>
+            <Row gutter={[16, 0]}>
+              <Col xs={24} sm={12}>
                 <p><strong>{t.corrections?.document || 'Document'}:</strong> {selectedCorrection.document?.title}</p>
                 <p><strong>{t.corrections?.errorType || 'Error Type'}:</strong> <Tag>{errorTypeLabels[selectedCorrection.errorType]}</Tag></p>
                 <p><strong>{t.corrections?.severity || 'Severity'}:</strong> <Tag color={severityColors[selectedCorrection.severity]}>{severityLabels[selectedCorrection.severity]}</Tag></p>
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <p><strong>{t.app.status}:</strong> <Badge status={statusColors[selectedCorrection.status] as any} text={statusLabels[selectedCorrection.status]} /></p>
                 <p><strong>{t.corrections?.reportedBy || 'Reported By'}:</strong> {selectedCorrection.reportedBy?.fio}</p>
                 <p><strong>{t.corrections?.assignedTo || 'Assigned To'}:</strong> {selectedCorrection.assignedTo?.fio || '-'}</p>

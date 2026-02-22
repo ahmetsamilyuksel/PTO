@@ -148,7 +148,7 @@ const Categories: React.FC = () => {
         </Button>
       }
     >
-      <Table columns={columns} dataSource={categories} rowKey="id" loading={loading} pagination={false} />
+      <Table columns={columns} dataSource={categories} rowKey="id" loading={loading} pagination={false} scroll={{ x: 700 }} />
 
       <Modal
         title={editCategory ? (t.categories?.editCategory || 'Edit Category') : (t.categories?.addCategory || 'Add Category')}
