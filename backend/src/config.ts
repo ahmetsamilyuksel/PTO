@@ -2,9 +2,6 @@ export const config = {
   port: parseInt(process.env.BACKEND_PORT || '3000', 10),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
   jwtExpiresIn: '24h',
-  database: {
-    url: process.env.DATABASE_URL || 'postgresql://pto:pto_secret@localhost:5432/pto_db?schema=public',
-  },
   minio: {
     endpoint: process.env.MINIO_ENDPOINT || 'localhost',
     port: parseInt(process.env.MINIO_PORT || '9000', 10),

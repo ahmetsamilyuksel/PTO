@@ -28,20 +28,15 @@ import teamRoutes from './routes/team';
 import adminRoutes from './routes/admin';
 import { initMinIO } from './services/storage';
 
-/**
- * Extend connection timeout for Neon Free tier cold starts.
- * Neon suspends compute after 5 min inactivity; wake-up takes 3-7 seconds.
- * Default Prisma timeout (5s) is too short, so we extend to 30s.
- */
-function buildDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL || config.database.url;
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}connect_timeout=30&pool_timeout=30`;
-}
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-export const prisma = new PrismaClient({
-  datasources: { db: { url: buildDatabaseUrl() } },
-});
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 const app = express();
 
@@ -63,25 +58,7 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-// Database warmup middleware for Neon cold starts.
-// MUST be before ALL routes (including auth) so that login requests also benefit.
-let dbReady = false;
-app.use('/api', async (_req, res, next) => {
-  if (!dbReady) {
-    try {
-      await prisma.$queryRawUnsafe('SELECT 1');
-      dbReady = true;
-      // Reset after 4 minutes (Neon sleeps after 5 min)
-      setTimeout(() => { dbReady = false; }, 4 * 60 * 1000);
-    } catch (error) {
-      console.error('Database warmup failed:', error instanceof Error ? error.message : error);
-      return res.status(503).json({ error: 'Database is waking up, please try again in a few seconds' });
-    }
-  }
-  next();
-});
-
-// Public routes (after DB warmup so login can reach the database)
+// Public routes
 app.use('/api/auth', authRoutes);
 
 // Protected routes
