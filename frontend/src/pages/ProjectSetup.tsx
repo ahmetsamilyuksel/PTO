@@ -391,7 +391,7 @@ const ProjectSetup: React.FC = () => {
         return (
           <Form form={projectForm} layout="vertical" style={{ maxWidth: 700 }}>
             <Row gutter={16}>
-              <Col span={16}>
+              <Col xs={24} sm={16}>
                 <Form.Item
                   name="name"
                   label={t.project.name}
@@ -400,7 +400,7 @@ const ProjectSetup: React.FC = () => {
                   <Input placeholder="ЖК Солнечный, корпус 3" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={8}>
                 <Form.Item
                   name="code"
                   label={t.project.code}
@@ -414,7 +414,7 @@ const ProjectSetup: React.FC = () => {
               <Input placeholder="г. Москва, ул. Строительная, д. 1" />
             </Form.Item>
             <Row gutter={16}>
-              <Col span={8}>
+              <Col xs={24} sm={8}>
                 <Form.Item
                   name="type"
                   label={t.project.type}
@@ -423,24 +423,24 @@ const ProjectSetup: React.FC = () => {
                   <Select options={PROJECT_TYPES} placeholder="Выберите тип" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col xs={12} sm={8}>
                 <Form.Item name="contractNumber" label="Номер договора">
                   <Input placeholder="ДС-2024/001" />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col xs={12} sm={8}>
                 <Form.Item name="contractDate" label="Дата договора">
                   <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
                 </Form.Item>
               </Col>
             </Row>
             <Row gutter={16}>
-              <Col span={12}>
+              <Col xs={12} sm={12}>
                 <Form.Item name="startDate" label="Дата начала">
                   <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col xs={12} sm={12}>
                 <Form.Item name="endDate" label="Дата окончания">
                   <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
                 </Form.Item>
@@ -515,7 +515,8 @@ const ProjectSetup: React.FC = () => {
               }}
               okText="Добавить"
               cancelText="Отмена"
-              width={600}
+              width="95%"
+              style={{ maxWidth: 600 }}
             >
               <Form form={orgForm} layout="vertical">
                 <Form.Item
@@ -542,24 +543,24 @@ const ProjectSetup: React.FC = () => {
                   <Input placeholder="ООО Строитель" />
                 </Form.Item>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="inn" label="ИНН">
                       <Input placeholder="1234567890" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="orgAddress" label="Адрес">
                       <Input placeholder="г. Москва" />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="contractNumber" label="Номер договора">
                       <Input />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="contractDate" label="Дата договора">
                       <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
                     </Form.Item>
@@ -633,7 +634,8 @@ const ProjectSetup: React.FC = () => {
               }}
               okText="Добавить"
               cancelText="Отмена"
-              width={600}
+              width="95%"
+              style={{ maxWidth: 600 }}
             >
               <Form form={personForm} layout="vertical">
                 <Form.Item
@@ -657,24 +659,24 @@ const ProjectSetup: React.FC = () => {
                 </Form.Item>
                 <Divider>Или создать нового</Divider>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="fullName" label="ФИО">
                       <Input placeholder="Иванов Иван Иванович" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="position" label="Должность">
                       <Input placeholder="Главный инженер" />
                     </Form.Item>
                   </Col>
                 </Row>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="email" label="Email">
                       <Input placeholder="email@company.ru" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="phone" label="Телефон">
                       <Input placeholder="+7 (999) 123-45-67" />
                     </Form.Item>
@@ -693,12 +695,12 @@ const ProjectSetup: React.FC = () => {
                   />
                 </Form.Item>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="orderNumber" label="Номер приказа">
                       <Input />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item name="orderDate" label="Дата приказа">
                       <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
                     </Form.Item>
@@ -848,11 +850,12 @@ const ProjectSetup: React.FC = () => {
               }}
               okText="Добавить"
               cancelText="Отмена"
-              width={600}
+              width="95%"
+              style={{ maxWidth: 600 }}
             >
               <Form form={workItemForm} layout="vertical">
                 <Row gutter={16}>
-                  <Col span={16}>
+                  <Col xs={24} sm={16}>
                     <Form.Item
                       name="name"
                       label={t.app.name}
@@ -861,7 +864,7 @@ const ProjectSetup: React.FC = () => {
                       <Input placeholder="Бетонирование фундаментной плиты" />
                     </Form.Item>
                   </Col>
-                  <Col span={8}>
+                  <Col xs={24} sm={8}>
                     <Form.Item name="code" label="Код">
                       <Input placeholder="Ф-01" />
                     </Form.Item>
@@ -876,12 +879,12 @@ const ProjectSetup: React.FC = () => {
                   />
                 </Form.Item>
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={12} sm={12}>
                     <Form.Item name="unit" label="Единица измерения">
                       <Input placeholder="м³" />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={12} sm={12}>
                     <Form.Item name="quantity" label="Количество">
                       <InputNumber style={{ width: '100%' }} min={0} />
                     </Form.Item>
@@ -906,7 +909,7 @@ const ProjectSetup: React.FC = () => {
         return (
           <div>
             <Title level={4}>Проверка данных проекта</Title>
-            <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
+            <Descriptions bordered column={{ xs: 1, sm: 2 }} style={{ marginBottom: 24 }}>
               <Descriptions.Item label="Название" span={2}>
                 {projectForm.getFieldValue('name') || '—'}
               </Descriptions.Item>
@@ -1000,6 +1003,8 @@ const ProjectSetup: React.FC = () => {
         items={steps}
         style={{ marginBottom: 32 }}
         size="small"
+        responsive={false}
+        direction="horizontal"
       />
 
       <Card>{renderStep()}</Card>

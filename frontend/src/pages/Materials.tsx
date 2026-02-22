@@ -198,37 +198,37 @@ const Materials: React.FC = () => {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col><Title level={3} style={{ margin: 0 }}>{t.material?.title}</Title></Col>
-        <Col><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.material?.addMaterial}</Button></Col>
+      <Row justify="space-between" align="middle" gutter={[16, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.material?.title}</Title></Col>
+        <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.material?.addMaterial}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={materials} rowKey="id" loading={loading} pagination={{ current: page, pageSize, total, showSizeChanger: true, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (p, ps) => { setPage(p); setPageSize(ps); } }} />
+      <Table columns={columns} dataSource={materials} rowKey="id" loading={loading} scroll={{ x: 900 }} pagination={{ current: page, pageSize, total, showSizeChanger: true, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (p, ps) => { setPage(p); setPageSize(ps); } }} />
 
-      <Modal title={t.material?.addMaterial} open={createModalVisible} onOk={handleCreate} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width={600}>
+      <Modal title={t.material?.addMaterial} open={createModalVisible} onOk={handleCreate} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={createForm} layout="vertical">
           <Form.Item name="name" label={t.material?.name} rules={[{ required: true, message: t.app.required }]}><Input /></Form.Item>
           <Row gutter={16}>
-            <Col span={12}><Form.Item name="brand" label={t.material?.brand}><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="manufacturer" label={t.material?.manufacturer}><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="brand" label={t.material?.brand}><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="manufacturer" label={t.material?.manufacturer}><Input /></Form.Item></Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}><Form.Item name="batchNumber" label={t.material?.batchNumber}><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="supplier" label={t.material?.supplier}><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="batchNumber" label={t.material?.batchNumber}><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="supplier" label={t.material?.supplier}><Input /></Form.Item></Col>
           </Row>
           <Row gutter={16}>
-            <Col span={8}><Form.Item name="arrivalDate" label={t.material?.arrivalDate}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-            <Col span={8}><Form.Item name="quantity" label={t.material?.quantity}><InputNumber style={{ width: '100%' }} min={0} /></Form.Item></Col>
-            <Col span={8}><Form.Item name="unit" label={t.material?.unit}><Input /></Form.Item></Col>
+            <Col xs={24} sm={8}><Form.Item name="arrivalDate" label={t.material?.arrivalDate}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+            <Col xs={12} sm={8}><Form.Item name="quantity" label={t.material?.quantity}><InputNumber style={{ width: '100%' }} min={0} /></Form.Item></Col>
+            <Col xs={12} sm={8}><Form.Item name="unit" label={t.material?.unit}><Input /></Form.Item></Col>
           </Row>
         </Form>
       </Modal>
 
-      <Drawer title={selectedMaterial?.name || t.material?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedMaterial(null); }} width={750}>
+      <Drawer title={selectedMaterial?.name || t.material?.title} open={detailDrawerVisible} onClose={() => { setDetailDrawerVisible(false); setSelectedMaterial(null); }} width="95%" styles={{ wrapper: { maxWidth: 750 } }}>
         <Spin spinning={detailLoading}>
           {selectedMaterial && (
             <Tabs defaultActiveKey="info" items={[
               { key: 'info', label: t.app.description, children: (
-                <Descriptions bordered column={2} size="small">
+                <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small">
                   <Descriptions.Item label={t.material?.name} span={2}>{selectedMaterial.name}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.brand}>{selectedMaterial.brand || '—'}</Descriptions.Item>
                   <Descriptions.Item label={t.material?.manufacturer}>{selectedMaterial.manufacturer || '—'}</Descriptions.Item>
@@ -275,27 +275,27 @@ const Materials: React.FC = () => {
         </Spin>
       </Drawer>
 
-      <Modal title={t.material?.addCertificate} open={certModalVisible} onOk={handleAddCertificate} onCancel={() => { setCertModalVisible(false); certForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={certLoading} width={600}>
+      <Modal title={t.material?.addCertificate} open={certModalVisible} onOk={handleAddCertificate} onCancel={() => { setCertModalVisible(false); certForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={certLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={certForm} layout="vertical">
           <Form.Item name="type" label={t.app.type} rules={[{ required: true, message: t.app.required }]}>
             <Select options={Object.entries(certTypeLabels).map(([value, label]) => ({ value, label }))} />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}><Form.Item name="number" label="No"><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="issuer" label={t.material?.issuer || 'Veren Kurum'}><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="number" label="No"><Input /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="issuer" label={t.material?.issuer || 'Veren Kurum'}><Input /></Form.Item></Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}><Form.Item name="issueDate" label={t.app.date}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-            <Col span={12}><Form.Item name="expiryDate" label={t.material?.expiryDate || 'Geçerlilik'}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+            <Col xs={12} sm={12}><Form.Item name="issueDate" label={t.app.date}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+            <Col xs={12} sm={12}><Form.Item name="expiryDate" label={t.material?.expiryDate || 'Geçerlilik'}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
           </Row>
         </Form>
       </Modal>
 
-      <Modal title={t.material?.performControl} open={controlModalVisible} onOk={handleAddControl} onCancel={() => { setControlModalVisible(false); controlForm.resetFields(); }} okText={t.app.save} cancelText={t.app.cancel} confirmLoading={controlLoading} width={600}>
+      <Modal title={t.material?.performControl} open={controlModalVisible} onOk={handleAddControl} onCancel={() => { setControlModalVisible(false); controlForm.resetFields(); }} okText={t.app.save} cancelText={t.app.cancel} confirmLoading={controlLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={controlForm} layout="vertical">
           <Row gutter={16}>
-            <Col span={12}><Form.Item name="inspectionDate" label={t.app.date} rules={[{ required: true }]} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
-            <Col span={12}><Form.Item name="result" label={t.app.status} rules={[{ required: true }]}><Select options={Object.entries(controlResultLabels).map(([value, cfg]) => ({ value, label: cfg.label }))} /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="inspectionDate" label={t.app.date} rules={[{ required: true }]} initialValue={dayjs()}><DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="result" label={t.app.status} rules={[{ required: true }]}><Select options={Object.entries(controlResultLabels).map(([value, cfg]) => ({ value, label: cfg.label }))} /></Form.Item></Col>
           </Row>
           <Form.Item name="visualCheck" label={t.material?.visualCheck || 'Görsel Kontrol'}><Input.TextArea rows={2} /></Form.Item>
           <Form.Item name="measurements" label={t.material?.measurements || 'Ölçümler'}><Input.TextArea rows={2} /></Form.Item>

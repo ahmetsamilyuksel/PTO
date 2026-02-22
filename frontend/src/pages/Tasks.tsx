@@ -347,8 +347,8 @@ const Tasks: React.FC = () => {
       <Card
         title={t.tasks?.title || 'Görev Yönetimi'}
         extra={
-          <Space>
-            <Select placeholder={t.app.filter} allowClear style={{ width: 160 }}
+          <Space wrap>
+            <Select placeholder={t.app.filter} allowClear style={{ minWidth: 140 }}
               onChange={(v) => { setFilterStatus(v); setPage(1); }}
               options={Object.entries(statusLabels).map(([k, v]) => ({ value: k, label: v }))}
             />
@@ -363,6 +363,7 @@ const Tasks: React.FC = () => {
           dataSource={tasks}
           rowKey="id"
           loading={loading}
+          scroll={{ x: 800 }}
           pagination={{
             current: page,
             total,
@@ -379,7 +380,8 @@ const Tasks: React.FC = () => {
         open={modalVisible}
         onCancel={() => { setModalVisible(false); form.resetFields(); }}
         onOk={() => form.submit()}
-        width={700}
+        width="95%"
+        style={{ maxWidth: 700 }}
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
           <Form.Item name="title" label={t.tasks?.taskName || 'Görev Adı'} rules={[{ required: true }]}>
@@ -389,17 +391,17 @@ const Tasks: React.FC = () => {
             <TextArea rows={3} />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col xs={24} sm={8}>
               <Form.Item name="priority" label={t.tasks?.priority || 'Öncelik'} initialValue="MEDIUM">
                 <Select options={Object.entries(priorityLabels).map(([k, v]) => ({ value: k, label: v }))} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={12} sm={8}>
               <Form.Item name="dueDate" label={t.tasks?.dueDate || 'Son Tarih'}>
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={12} sm={8}>
               <Form.Item name="reminderDate" label={t.tasks?.reminderDate || 'Hatırlatıcı'}>
                 <DatePicker showTime style={{ width: '100%' }} />
               </Form.Item>
@@ -442,17 +444,18 @@ const Tasks: React.FC = () => {
         open={detailVisible}
         onCancel={() => { setDetailVisible(false); setSelectedTask(null); setTaskMessages([]); }}
         footer={null}
-        width={750}
+        width="95%"
+        style={{ maxWidth: 750 }}
       >
         {selectedTask && (
           <div>
             {/* Task Info */}
-            <Row gutter={16} style={{ marginBottom: 16 }}>
-              <Col span={12}>
+            <Row gutter={[16, 8]} style={{ marginBottom: 16 }}>
+              <Col xs={24} sm={12}>
                 <Text type="secondary">{t.app.status}: </Text>
                 <Badge status={statusColors[selectedTask.status] as any} text={statusLabels[selectedTask.status]} />
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Text type="secondary">{t.tasks?.dueDate || 'Son Tarih'}: </Text>
                 <Text type={selectedTask.dueDate && dayjs(selectedTask.dueDate).isBefore(dayjs()) ? 'danger' : undefined}>
                   {selectedTask.dueDate ? dayjs(selectedTask.dueDate).format('DD.MM.YYYY') : '-'}

@@ -175,11 +175,11 @@ const ProjectProgress: React.FC = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24}>
             <Card title={t.progress?.correctionsSummary || 'Corrections Summary'} size="small">
-              <Row gutter={16}>
-                <Col span={6}><Statistic title={t.corrections?.statuses?.OPEN || 'Open'} value={summary.corrections.OPEN || 0} valueStyle={{ color: '#ff4d4f' }} /></Col>
-                <Col span={6}><Statistic title={t.corrections?.statuses?.IN_PROGRESS || 'In Progress'} value={summary.corrections.IN_PROGRESS || 0} valueStyle={{ color: '#faad14' }} /></Col>
-                <Col span={6}><Statistic title={t.corrections?.statuses?.RESOLVED || 'Resolved'} value={summary.corrections.RESOLVED || 0} valueStyle={{ color: '#52c41a' }} /></Col>
-                <Col span={6}><Statistic title={t.corrections?.statuses?.CLOSED || 'Closed'} value={summary.corrections.CLOSED || 0} /></Col>
+              <Row gutter={[16, 16]}>
+                <Col xs={12} sm={6}><Statistic title={t.corrections?.statuses?.OPEN || 'Open'} value={summary.corrections.OPEN || 0} valueStyle={{ color: '#ff4d4f' }} /></Col>
+                <Col xs={12} sm={6}><Statistic title={t.corrections?.statuses?.IN_PROGRESS || 'In Progress'} value={summary.corrections.IN_PROGRESS || 0} valueStyle={{ color: '#faad14' }} /></Col>
+                <Col xs={12} sm={6}><Statistic title={t.corrections?.statuses?.RESOLVED || 'Resolved'} value={summary.corrections.RESOLVED || 0} valueStyle={{ color: '#52c41a' }} /></Col>
+                <Col xs={12} sm={6}><Statistic title={t.corrections?.statuses?.CLOSED || 'Closed'} value={summary.corrections.CLOSED || 0} /></Col>
               </Row>
             </Card>
           </Col>

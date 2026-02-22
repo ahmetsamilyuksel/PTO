@@ -104,10 +104,10 @@ const Dashboard: React.FC = () => {
   return (
     <Spin spinning={loading}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Row justify="space-between" align="middle">
-          <Col><Title level={3} style={{ margin: 0 }}>{t.dashboard?.title}</Title></Col>
-          <Col>
-            <Select value={selectedProjectId} onChange={handleProjectChange} style={{ width: 300 }} placeholder={t.dashboard?.selectProject}
+        <Row justify="space-between" align="middle" gutter={[16, 12]}>
+          <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.dashboard?.title}</Title></Col>
+          <Col xs={24} sm={12}>
+            <Select value={selectedProjectId} onChange={handleProjectChange} style={{ width: '100%', maxWidth: 300 }} placeholder={t.dashboard?.selectProject}
               options={projects.map((p) => ({ value: p.id, label: p.code ? `${p.code} — ${p.name}` : p.name }))} />
           </Col>
         </Row>

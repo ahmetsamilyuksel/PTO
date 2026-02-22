@@ -221,7 +221,7 @@ const Team: React.FC = () => {
       <Card
         title={<Space><TeamOutlined /> {t.team?.title || 'Team Management'}</Space>}
         extra={
-          <Space>
+          <Space wrap>
             <Button icon={<PlusOutlined />} onClick={() => { fetchAvailable(); setAddExistingVisible(true); }}>
               {t.team?.addExisting || 'Add Existing User'}
             </Button>
@@ -231,7 +231,7 @@ const Team: React.FC = () => {
           </Space>
         }
       >
-        <Table columns={columns} dataSource={members} rowKey="id" loading={loading} pagination={false} />
+        <Table columns={columns} dataSource={members} rowKey="id" loading={loading} pagination={false} scroll={{ x: 900 }} />
       </Card>
 
       {/* Add Existing User Modal */}
@@ -266,40 +266,41 @@ const Team: React.FC = () => {
         open={createNewVisible}
         onCancel={() => { setCreateNewVisible(false); createForm.resetFields(); }}
         onOk={() => createForm.submit()}
-        width={700}
+        width="95%"
+        style={{ maxWidth: 700 }}
       >
         <Form form={createForm} layout="vertical" onFinish={handleCreateNew}>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="fio" label={t.person.fio} rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="email" label={t.person.email} rules={[{ required: true, type: 'email' }]}>
                 <Input />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="position" label={t.person.position}>
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="phone" label={t.person.phone}>
                 <Input />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="role" label={t.team?.systemRole || 'System Role'} initialValue="ENGINEER">
                 <Select options={Object.entries(userRoleLabels).map(([k, v]) => ({ value: k, label: v }))} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="organizationId" label={t.person.organization}>
                 <Select allowClear>
                   {organizations.map((o: any) => (
@@ -310,12 +311,12 @@ const Team: React.FC = () => {
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="projectRole" label={t.team?.projectRole || 'Project Role'} rules={[{ required: true }]}>
                 <Select options={Object.entries(projectRoleLabels).map(([k, v]) => ({ value: k, label: v }))} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="password" label={t.auth.password} initialValue="Temp1234!">
                 <Input.Password />
               </Form.Item>

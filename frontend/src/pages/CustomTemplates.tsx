@@ -189,7 +189,7 @@ const CustomTemplates: React.FC = () => {
           </Button>
         }
       >
-        <Table columns={columns} dataSource={templates} rowKey="id" loading={loading} pagination={false} />
+        <Table columns={columns} dataSource={templates} rowKey="id" loading={loading} pagination={false} scroll={{ x: 800 }} />
       </Card>
 
       {/* Add/Edit Template Modal */}
@@ -198,7 +198,8 @@ const CustomTemplates: React.FC = () => {
         open={modalVisible}
         onCancel={() => { setModalVisible(false); setEditTemplate(null); setFileList([]); form.resetFields(); }}
         onOk={() => form.submit()}
-        width={600}
+        width="95%"
+        style={{ maxWidth: 600 }}
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
           <Form.Item name="name" label={t.app.name} rules={[{ required: true }]}>
@@ -252,11 +253,12 @@ const CustomTemplates: React.FC = () => {
         open={detailVisible}
         onCancel={() => { setDetailVisible(false); setSelectedTemplate(null); }}
         footer={null}
-        width={600}
+        width="95%"
+        style={{ maxWidth: 600 }}
       >
         {selectedTemplate && (
           <div>
-            <Descriptions column={2} bordered size="small">
+            <Descriptions column={{ xs: 1, sm: 2 }} bordered size="small">
               <Descriptions.Item label={t.app.name}>{selectedTemplate.name}</Descriptions.Item>
               <Descriptions.Item label={t.templates?.format || 'Format'}>{selectedTemplate.format}</Descriptions.Item>
               <Descriptions.Item label={t.doc.type}>{selectedTemplate.documentType ? (docTypeLabels as any)[selectedTemplate.documentType] : '-'}</Descriptions.Item>

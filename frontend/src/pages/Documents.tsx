@@ -346,17 +346,18 @@ const Documents: React.FC = () => {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col>
+      <Row justify="space-between" align="middle" gutter={[16, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12}>
           <Title level={3} style={{ margin: 0 }}>
             {t.doc?.title}
           </Title>
         </Col>
-        <Col>
+        <Col xs={24} sm={12} style={{ textAlign: 'right' }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
+            block={false}
           >
             {t.doc?.createNew}
           </Button>
@@ -364,49 +365,59 @@ const Documents: React.FC = () => {
       </Row>
 
       {/* Filters */}
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Select
-          value={filterType}
-          onChange={setFilterType}
-          allowClear
-          placeholder={t.doc?.type}
-          style={{ width: 220 }}
-          options={documentTypes.map((t) => ({ value: t, label: t }))}
-        />
-        <Select
-          value={filterStatus}
-          onChange={setFilterStatus}
-          allowClear
-          placeholder={t.app.status}
-          style={{ width: 160 }}
-          options={Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
-            value,
-            label: cfg.label,
-          }))}
-        />
-        <Select
-          value={filterLocation}
-          onChange={setFilterLocation}
-          allowClear
-          showSearch
-          optionFilterProp="label"
-          placeholder={t.doc?.location}
-          style={{ width: 200 }}
-          options={flatLocs.map((l) => ({ value: l.id, label: l.name }))}
-        />
-        <DatePicker.RangePicker
-          value={filterDateRange}
-          onChange={(dates) => setFilterDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)}
-          format="DD.MM.YYYY"
-          placeholder={[t.package?.periodFrom || 'Başlangıç', t.package?.periodTo || 'Bitiş']}
-        />
-      </Space>
+      <Row gutter={[8, 8]} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12} md={6}>
+          <Select
+            value={filterType}
+            onChange={setFilterType}
+            allowClear
+            placeholder={t.doc?.type}
+            style={{ width: '100%' }}
+            options={documentTypes.map((t) => ({ value: t, label: t }))}
+          />
+        </Col>
+        <Col xs={12} sm={12} md={4}>
+          <Select
+            value={filterStatus}
+            onChange={setFilterStatus}
+            allowClear
+            placeholder={t.app.status}
+            style={{ width: '100%' }}
+            options={Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
+              value,
+              label: cfg.label,
+            }))}
+          />
+        </Col>
+        <Col xs={12} sm={12} md={5}>
+          <Select
+            value={filterLocation}
+            onChange={setFilterLocation}
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder={t.doc?.location}
+            style={{ width: '100%' }}
+            options={flatLocs.map((l) => ({ value: l.id, label: l.name }))}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={9}>
+          <DatePicker.RangePicker
+            value={filterDateRange}
+            onChange={(dates) => setFilterDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)}
+            format="DD.MM.YYYY"
+            style={{ width: '100%' }}
+            placeholder={[t.package?.periodFrom || 'Başlangıç', t.package?.periodTo || 'Bitiş']}
+          />
+        </Col>
+      </Row>
 
       <Table
         columns={columns}
         dataSource={documents}
         rowKey="id"
         loading={loading}
+        scroll={{ x: 800 }}
         pagination={{
           current: page,
           pageSize,
@@ -433,7 +444,8 @@ const Documents: React.FC = () => {
         okText={t.app.create}
         cancelText={t.app.cancel}
         confirmLoading={createLoading}
-        width={700}
+        width="95%"
+        style={{ maxWidth: 700 }}
       >
         <Form form={createForm} layout="vertical">
           <Form.Item label={t.doc?.fromEvent}>
@@ -459,12 +471,12 @@ const Documents: React.FC = () => {
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={16}>
+            <Col xs={24} sm={16}>
               <Form.Item name="type" label={t.doc?.type} rules={[{ required: true, message: t.app.required }]}>
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={8}>
               <Form.Item name="category" label={t.categories?.title || 'Kategori'} rules={[{ required: true, message: t.app.required }]}>
                 <Select
                   placeholder={t.categories?.title}
@@ -489,13 +501,13 @@ const Documents: React.FC = () => {
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="locationId" label={t.doc?.location}>
                 <Select allowClear showSearch optionFilterProp="label" placeholder={t.doc?.location}
                   options={flatLocs.map((l) => ({ value: l.id, label: l.name }))} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="workItemId" label={t.doc?.workItem}>
                 <Select allowClear showSearch optionFilterProp="label" placeholder={t.doc?.workItem}
                   options={workItems.map((w) => ({ value: w.id, label: w.code ? `${w.code}: ${w.name}` : w.name }))} />
@@ -527,10 +539,11 @@ const Documents: React.FC = () => {
           setSelectedDocument(null);
           setEditMode(false);
         }}
-        width={800}
+        width="95%"
+        styles={{ wrapper: { maxWidth: 800 } }}
         extra={
           selectedDocument && (
-            <Space>
+            <Space wrap>
               {selectedDocument.status === 'DRAFT' && (
                 <>
                   <Button

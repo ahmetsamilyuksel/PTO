@@ -169,12 +169,12 @@ const DocumentMatrix: React.FC = () => {
 
   return (
     <div>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col><Title level={3} style={{ margin: 0 }}>{t.matrix?.title || 'Evrak Matrisi'}</Title></Col>
-        <Col>
-          <Space>
-            <Select value={filterWorkType} onChange={setFilterWorkType} allowClear placeholder={t.matrix?.workType || 'İş Türü'} style={{ width: 200 }} options={workTypes.map((wt) => ({ value: wt, label: wt }))} />
-            <Select value={filterStatus} onChange={setFilterStatus} allowClear placeholder={t.app.status} style={{ width: 160 }} options={Object.entries(statusConfig).map(([value, cfg]) => ({ value, label: cfg.label }))} />
+      <Row justify="space-between" align="middle" gutter={[16, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} md={8}><Title level={3} style={{ margin: 0 }}>{t.matrix?.title || 'Evrak Matrisi'}</Title></Col>
+        <Col xs={24} md={16}>
+          <Space wrap>
+            <Select value={filterWorkType} onChange={setFilterWorkType} allowClear placeholder={t.matrix?.workType || 'İş Türü'} style={{ minWidth: 160 }} options={workTypes.map((wt) => ({ value: wt, label: wt }))} />
+            <Select value={filterStatus} onChange={setFilterStatus} allowClear placeholder={t.app.status} style={{ minWidth: 140 }} options={Object.entries(statusConfig).map(([value, cfg]) => ({ value, label: cfg.label }))} />
             <Button icon={<ReloadOutlined />} onClick={fetchMatrix}>{t.app.reset || 'Yenile'}</Button>
           </Space>
         </Col>
