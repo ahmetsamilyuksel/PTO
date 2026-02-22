@@ -46,6 +46,7 @@ function getCurrentTranslations(): TranslationKeys {
 /**
  * Extract a user-friendly error message from an API error response.
  * Uses localized messages based on the user's language preference.
+ * Appends server error detail for debugging when available.
  * Falls back to the provided default message.
  */
 export function getApiError(error: unknown, fallback: string): string {
@@ -57,11 +58,17 @@ export function getApiError(error: unknown, fallback: string): string {
   // Ant Design form validation error - let the form handle it
   if (err.errorFields) return fallback;
 
-  // Log server error for debugging, don't show raw English to user
+  // Extract server error message
   const serverMsg = err.response?.data?.error || err.response?.data?.message;
   if (serverMsg) {
     console.warn('[API Error]', serverMsg);
   }
+
+  // Extract meaningful detail from server message (part after last colon)
+  const extractDetail = (msg: string): string => {
+    const idx = msg.lastIndexOf(':');
+    return idx > -1 ? msg.substring(idx + 1).trim() : msg;
+  };
 
   // HTTP status code fallbacks using localized messages
   const t = getCurrentTranslations();
@@ -70,7 +77,10 @@ export function getApiError(error: unknown, fallback: string): string {
   if (status === 403) return t.messages.accessDenied;
   if (status === 404) return t.messages.notFound;
   if (status === 409) return t.messages.alreadyExists;
-  if (status === 500) return t.messages.serverError;
+  if (status === 500) {
+    const detail = serverMsg ? extractDetail(serverMsg) : '';
+    return detail ? `${t.messages.serverError}: ${detail}` : t.messages.serverError;
+  }
 
   return fallback;
 }

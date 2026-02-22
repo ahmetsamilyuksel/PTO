@@ -27,7 +27,20 @@ import progressRoutes from './routes/progress';
 import teamRoutes from './routes/team';
 import { initMinIO } from './services/storage';
 
-export const prisma = new PrismaClient();
+/**
+ * Extend connection timeout for Neon Free tier cold starts.
+ * Neon suspends compute after 5 min inactivity; wake-up takes 3-7 seconds.
+ * Default Prisma timeout (5s) is too short, so we extend to 30s.
+ */
+function buildDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL || config.database.url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}connect_timeout=30&pool_timeout=30`;
+}
+
+export const prisma = new PrismaClient({
+  datasources: { db: { url: buildDatabaseUrl() } },
+});
 
 const app = express();
 
@@ -43,8 +56,31 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/api/auth', authRoutes);
 
 // Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', system: config.systemName, env: process.env.NODE_ENV });
+app.get('/api/health', async (_req, res) => {
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1');
+    res.json({ status: 'ok', db: 'connected', system: config.systemName, env: process.env.NODE_ENV });
+  } catch (error) {
+    res.json({ status: 'ok', db: 'disconnected', system: config.systemName, env: process.env.NODE_ENV });
+  }
+});
+
+// Database warmup middleware for Neon cold starts on Vercel.
+// On the first request after Neon sleeps, this ensures the DB is awake
+// before the route handler tries to use it.
+let dbReady = false;
+app.use('/api', async (_req, _res, next) => {
+  if (!dbReady) {
+    try {
+      await prisma.$queryRawUnsafe('SELECT 1');
+      dbReady = true;
+      // Reset after 4 minutes (Neon sleeps after 5 min)
+      setTimeout(() => { dbReady = false; }, 4 * 60 * 1000);
+    } catch {
+      // DB might be waking up - Prisma will retry with extended timeout
+    }
+  }
+  next();
 });
 
 // Protected routes
