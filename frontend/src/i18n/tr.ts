@@ -569,4 +569,28 @@ export const tr: TranslationKeys = {
     createdBy: 'Oluşturan',
     usedIn: 'Kullanılan Dokümanlar',
   },
+
+  // ─── Sistem Mesajları ───
+  messages: {
+    accessDenied: 'Erişim reddedildi',
+    notFound: 'Kayıt bulunamadı',
+    alreadyExists: 'Bu kayıt zaten mevcut',
+    serverError: 'Sunucu hatası',
+    fileUploaded: 'Dosya yüklendi',
+    fileDeleted: 'Dosya silindi',
+    fileUploadFailed: 'Dosya yüklenirken hata oluştu',
+    fileDeleteFailed: 'Dosya silinirken hata oluştu',
+    loginFailed: 'Giriş hatası. Bilgilerinizi kontrol edin.',
+    welcome: 'Hoş geldiniz, {name}!',
+    projectCreated: 'Proje başarıyla oluşturuldu!',
+    projectCreateFailed: 'Proje oluşturulurken hata oluştu',
+    enterEmail: 'E-posta giriniz',
+    invalidEmail: 'Geçersiz e-posta',
+    enterPassword: 'Şifre giriniz',
+    enterName: 'Ad giriniz',
+    enterCode: 'Kod giriniz',
+    selectType: 'Tür seçiniz',
+    selectRole: 'Rol seçiniz',
+    selectAtLeastOne: 'En az bir seçenek belirleyiniz',
+  },
 };

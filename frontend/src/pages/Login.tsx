@@ -3,6 +3,7 @@ import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient, { getApiError } from '../api/client';
+import { useI18n } from '../i18n';
 import type { LoginResponse } from '../types';
 
 const { Title, Text } = Typography;
@@ -14,6 +15,7 @@ interface LoginFormValues {
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,10 +30,10 @@ const Login: React.FC = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
 
-      message.success(`Добро пожаловать, ${user.fullName}!`);
+      message.success(t.messages.welcome.replace('{name}', user.fullName));
       navigate(from, { replace: true });
     } catch (error: unknown) {
-      message.error(getApiError(error, 'Ошибка входа. Проверьте учётные данные.'));
+      message.error(getApiError(error, t.messages.loginFailed));
     } finally {
       setLoading(false);
     }
@@ -57,9 +59,9 @@ const Login: React.FC = () => {
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           <div>
             <Title level={2} style={{ marginBottom: 4 }}>
-              ПТО DocOps
+              {t.app.title}
             </Title>
-            <Text type="secondary">Система исполнительной документации</Text>
+            <Text type="secondary">{t.app.subtitle}</Text>
           </div>
 
           <Form
@@ -72,23 +74,23 @@ const Login: React.FC = () => {
             <Form.Item
               name="email"
               rules={[
-                { required: true, message: 'Введите email' },
-                { type: 'email', message: 'Некорректный email' },
+                { required: true, message: t.messages.enterEmail },
+                { type: 'email', message: t.messages.invalidEmail },
               ]}
             >
               <Input
                 prefix={<UserOutlined />}
-                placeholder="Email"
+                placeholder={t.auth.email}
               />
             </Form.Item>
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Введите пароль' }]}
+              rules={[{ required: true, message: t.messages.enterPassword }]}
             >
               <Input.Password
                 prefix={<LockOutlined />}
-                placeholder="Пароль"
+                placeholder={t.auth.password}
               />
             </Form.Item>
 
@@ -100,7 +102,7 @@ const Login: React.FC = () => {
                 block
                 style={{ height: 44 }}
               >
-                Войти
+                {t.auth.loginButton}
               </Button>
             </Form.Item>
           </Form>

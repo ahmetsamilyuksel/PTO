@@ -567,6 +567,30 @@ export const ru = {
     createdBy: 'Создал',
     usedIn: 'Используется в документах',
   },
+
+  // ─── Системные сообщения ───
+  messages: {
+    accessDenied: 'Нет доступа',
+    notFound: 'Запись не найдена',
+    alreadyExists: 'Такая запись уже существует',
+    serverError: 'Ошибка сервера',
+    fileUploaded: 'Файл загружен',
+    fileDeleted: 'Файл удалён',
+    fileUploadFailed: 'Ошибка загрузки файла',
+    fileDeleteFailed: 'Ошибка удаления файла',
+    loginFailed: 'Ошибка входа. Проверьте учётные данные.',
+    welcome: 'Добро пожаловать, {name}!',
+    projectCreated: 'Проект успешно создан!',
+    projectCreateFailed: 'Ошибка при создании проекта',
+    enterEmail: 'Введите email',
+    invalidEmail: 'Некорректный email',
+    enterPassword: 'Введите пароль',
+    enterName: 'Введите название',
+    enterCode: 'Введите код',
+    selectType: 'Выберите тип',
+    selectRole: 'Выберите роль',
+    selectAtLeastOne: 'Выберите хотя бы один вариант',
+  },
 };
 
 export type TranslationKeys = typeof ru;
