@@ -1,16 +1,18 @@
 {
-  "version": 2,
-  "installCommand": "npm install && cd frontend && npm install",
-  "buildCommand": "cd backend && npx prisma generate && (npx prisma migrate deploy || true) && (npx --yes tsx@4 prisma/seed.ts || true) && cd ../frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30,
-      "includeFiles": "backend/**"
-    }
-  },
+  "buildCommand": "",
+  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/api/:path*", "destination": "http://136.115.220.76:3000/api/:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,Authorization" }
+      ]
+    }
   ]
 }
