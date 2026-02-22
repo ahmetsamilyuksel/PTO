@@ -49,47 +49,29 @@ import type {
 import DocumentForm from '../components/DocumentForm';
 import WorkflowStatus from '../components/WorkflowStatus';
 import FileUpload from '../components/FileUpload';
+import { useI18n } from '../i18n';
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
-const STATUS_CONFIG: Record<DocumentStatus | string, { color: string; label: string }> = {
-  DRAFT: { color: 'gold', label: 'Черновик' },
-  IN_REVIEW: { color: 'blue', label: 'На проверке' },
-  PENDING_SIGNATURE: { color: 'purple', label: 'На подписи' },
-  SIGNED: { color: 'green', label: 'Подписан' },
-  REJECTED: { color: 'red', label: 'Отклонён' },
-  ARCHIVED: { color: 'default', label: 'Архив' },
-};
-
-const DOCUMENT_EVENTS = [
-  {
-    key: 'material_arrived',
-    label: 'Поступил материал',
-    suggestedType: 'Акт входного контроля',
-    category: 'ACT',
-  },
-  {
-    key: 'hidden_work',
-    label: 'Закрытие скрытых работ',
-    suggestedType: 'Акт освидетельствования скрытых работ',
-    category: 'ACT',
-  },
-  {
-    key: 'test_performed',
-    label: 'Проведено испытание',
-    suggestedType: 'Протокол испытаний',
-    category: 'PROTOCOL',
-  },
-  {
-    key: 'section_handover',
-    label: 'Сдача участка',
-    suggestedType: 'Акт приёмки выполненных работ',
-    category: 'ACT',
-  },
-];
-
 const Documents: React.FC = () => {
+  const { t } = useI18n();
+
+  const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
+    DRAFT: { color: 'gold', label: t.doc?.statuses?.DRAFT || 'Taslak' },
+    IN_REVIEW: { color: 'blue', label: t.doc?.statuses?.IN_REVIEW || 'İncelemede' },
+    PENDING_SIGNATURE: { color: 'purple', label: t.doc?.statuses?.PENDING_SIGNATURE || 'İmza Bekliyor' },
+    SIGNED: { color: 'green', label: t.doc?.statuses?.SIGNED || 'İmzalandı' },
+    REJECTED: { color: 'red', label: t.doc?.statuses?.REVISION_REQUESTED || 'Reddedildi' },
+    ARCHIVED: { color: 'default', label: t.doc?.statuses?.ARCHIVED || 'Arşiv' },
+  };
+
+  const DOCUMENT_EVENTS = [
+    { key: 'material_arrived', label: t.doc?.events?.materialArrived || 'Malzeme Geldi', suggestedType: t.doc?.types?.INCOMING_CONTROL_ACT || 'Giriş Kontrol Aktı', category: 'ACT' },
+    { key: 'hidden_work', label: t.doc?.events?.hiddenWorkClosed || 'Gizli İş Kapatılacak', suggestedType: t.doc?.types?.AOSR || 'АОСР', category: 'ACT' },
+    { key: 'test_performed', label: t.doc?.events?.testPerformed || 'Test Yapıldı', suggestedType: t.doc?.types?.TEST_PROTOCOL || 'Test Protokolü', category: 'PROTOCOL' },
+    { key: 'section_handover', label: t.doc?.events?.sectionHandover || 'Bölüm Teslim', suggestedType: t.doc?.types?.COMPLETION_ACT || 'İş Bitirme Aktı', category: 'ACT' },
+  ];
   const { id: projectId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -146,7 +128,7 @@ const Documents: React.FC = () => {
       setDocuments(data.data || data || []);
       setTotal(data.total || 0);
     } catch {
-      message.error('Ошибка загрузки документов');
+      message.error(t.app.error);
     } finally {
       setLoading(false);
     }
@@ -198,7 +180,7 @@ const Documents: React.FC = () => {
       const response = await apiClient.get(`/documents/${docId}`);
       setSelectedDocument(response.data);
     } catch {
-      message.error('Ошибка загрузки документа');
+      message.error(t.app.error);
     } finally {
       setDetailLoading(false);
     }
@@ -220,7 +202,7 @@ const Documents: React.FC = () => {
       };
 
       await apiClient.post('/documents', payload);
-      message.success('Документ создан');
+      message.success(t.app.success);
       setCreateModalVisible(false);
       createForm.resetFields();
       setSelectedEvent(undefined);
@@ -228,7 +210,7 @@ const Documents: React.FC = () => {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } }; errorFields?: unknown };
       if (!err.errorFields) {
-        message.error(err.response?.data?.message || 'Ошибка создания документа');
+        message.error(err.response?.data?.message || t.app.error);
       }
     } finally {
       setCreateLoading(false);
@@ -240,13 +222,13 @@ const Documents: React.FC = () => {
     try {
       const values = await editForm.validateFields();
       await apiClient.put(`/documents/${selectedDocument.id}`, values);
-      message.success('Документ обновлён');
+      message.success(t.app.success);
       setEditMode(false);
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Ошибка обновления');
+      message.error(err.response?.data?.message || t.app.error);
     }
   };
 
@@ -266,14 +248,14 @@ const Documents: React.FC = () => {
         toStatus: actionToStatus[actionType] || actionType,
         comment: actionComment,
       });
-      message.success('Действие выполнено');
+      message.success(t.app.success);
       setActionModalVisible(false);
       setActionComment('');
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || 'Ошибка выполнения действия');
+      message.error(err.response?.data?.message || t.app.error);
     } finally {
       setActionLoading(false);
     }
@@ -304,25 +286,25 @@ const Documents: React.FC = () => {
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
-      title: 'Тип',
+      title: t.app.type,
       dataIndex: 'type',
       key: 'type',
       width: 200,
     },
     {
-      title: 'Наименование',
+      title: t.app.name,
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
     },
     {
-      title: 'Зона',
+      title: t.doc?.location,
       key: 'location',
       width: 150,
       render: (_: unknown, record: Document) => record.location?.name || '—',
     },
     {
-      title: 'Статус',
+      title: t.app.status,
       dataIndex: 'status',
       key: 'status',
       width: 130,
@@ -332,14 +314,14 @@ const Documents: React.FC = () => {
       },
     },
     {
-      title: 'Дата',
+      title: t.app.date,
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 110,
       render: (date: string) => dayjs(date).format('DD.MM.YYYY'),
     },
     {
-      title: 'Действия',
+      title: t.app.actions,
       key: 'actions',
       width: 100,
       render: (_: unknown, record: Document) => (
@@ -367,7 +349,7 @@ const Documents: React.FC = () => {
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Col>
           <Title level={3} style={{ margin: 0 }}>
-            Документы
+            {t.doc?.title}
           </Title>
         </Col>
         <Col>
@@ -376,7 +358,7 @@ const Documents: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={() => setCreateModalVisible(true)}
           >
-            Создать документ
+            {t.doc?.createNew}
           </Button>
         </Col>
       </Row>
@@ -387,7 +369,7 @@ const Documents: React.FC = () => {
           value={filterType}
           onChange={setFilterType}
           allowClear
-          placeholder="Тип документа"
+          placeholder={t.doc?.type}
           style={{ width: 220 }}
           options={documentTypes.map((t) => ({ value: t, label: t }))}
         />
@@ -395,7 +377,7 @@ const Documents: React.FC = () => {
           value={filterStatus}
           onChange={setFilterStatus}
           allowClear
-          placeholder="Статус"
+          placeholder={t.app.status}
           style={{ width: 160 }}
           options={Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({
             value,
@@ -408,7 +390,7 @@ const Documents: React.FC = () => {
           allowClear
           showSearch
           optionFilterProp="label"
-          placeholder="Зона"
+          placeholder={t.doc?.location}
           style={{ width: 200 }}
           options={flatLocs.map((l) => ({ value: l.id, label: l.name }))}
         />
@@ -416,7 +398,7 @@ const Documents: React.FC = () => {
           value={filterDateRange}
           onChange={(dates) => setFilterDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)}
           format="DD.MM.YYYY"
-          placeholder={['Дата от', 'Дата до']}
+          placeholder={[t.package?.periodFrom || 'Başlangıç', t.package?.periodTo || 'Bitiş']}
         />
       </Space>
 
@@ -430,7 +412,7 @@ const Documents: React.FC = () => {
           pageSize,
           total,
           showSizeChanger: true,
-          showTotal: (t) => `Всего: ${t}`,
+          showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`,
           onChange: (p, ps) => {
             setPage(p);
             setPageSize(ps);
@@ -440,7 +422,7 @@ const Documents: React.FC = () => {
 
       {/* Create Document Modal */}
       <Modal
-        title="Создать документ"
+        title={t.doc?.createNew}
         open={createModalVisible}
         onOk={handleCreate}
         onCancel={() => {
@@ -448,13 +430,13 @@ const Documents: React.FC = () => {
           createForm.resetFields();
           setSelectedEvent(undefined);
         }}
-        okText="Создать"
-        cancelText="Отмена"
+        okText={t.app.create}
+        cancelText={t.app.cancel}
         confirmLoading={createLoading}
         width={700}
       >
         <Form form={createForm} layout="vertical">
-          <Form.Item label="Событие">
+          <Form.Item label={t.doc?.fromEvent}>
             <Select
               value={selectedEvent}
               onChange={(value) => {
@@ -468,7 +450,7 @@ const Documents: React.FC = () => {
                 }
               }}
               allowClear
-              placeholder="Выберите событие (необязательно)"
+              placeholder={t.doc?.fromEvent}
               options={DOCUMENT_EVENTS.map((e) => ({
                 value: e.key,
                 label: e.label,
@@ -478,80 +460,55 @@ const Documents: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={16}>
-              <Form.Item
-                name="type"
-                label="Тип документа"
-                rules={[{ required: true, message: 'Укажите тип' }]}
-              >
-                <Input placeholder="Акт освидетельствования скрытых работ" />
+              <Form.Item name="type" label={t.doc?.type} rules={[{ required: true, message: t.app.required }]}>
+                <Input />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item
-                name="category"
-                label="Категория"
-                rules={[{ required: true, message: 'Выберите категорию' }]}
-              >
+              <Form.Item name="category" label={t.categories?.title || 'Kategori'} rules={[{ required: true, message: t.app.required }]}>
                 <Select
-                  placeholder="Категория"
+                  placeholder={t.categories?.title}
                   options={[
-                    { value: 'ACT', label: 'Акт' },
-                    { value: 'PROTOCOL', label: 'Протокол' },
-                    { value: 'JOURNAL', label: 'Журнал' },
-                    { value: 'CERTIFICATE', label: 'Сертификат' },
-                    { value: 'PERMIT', label: 'Разрешение' },
-                    { value: 'DRAWING', label: 'Чертёж' },
-                    { value: 'SPECIFICATION', label: 'Спецификация' },
-                    { value: 'REPORT', label: 'Отчёт' },
-                    { value: 'ORDER', label: 'Приказ' },
+                    { value: 'ACT', label: t.doc?.types?.AOSR?.split('(')[0]?.trim() || 'Akt' },
+                    { value: 'PROTOCOL', label: t.doc?.types?.TEST_PROTOCOL || 'Protokol' },
+                    { value: 'JOURNAL', label: t.menu?.journals || 'Günlük' },
+                    { value: 'CERTIFICATE', label: t.material?.certificates?.split('/')[0]?.trim() || 'Sertifika' },
+                    { value: 'PERMIT', label: 'İzin Belgesi' },
+                    { value: 'DRAWING', label: t.doc?.types?.EXECUTIVE_DRAWING || 'Çizim' },
+                    { value: 'SPECIFICATION', label: 'Şartname' },
+                    { value: 'REPORT', label: 'Rapor' },
+                    { value: 'ORDER', label: 'Emir' },
                   ]}
                 />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item
-            name="title"
-            label="Наименование"
-            rules={[{ required: true, message: 'Введите наименование' }]}
-          >
-            <Input placeholder="Акт освидетельствования скрытых работ по устройству..." />
+          <Form.Item name="title" label={t.doc?.docTitle || t.app.name} rules={[{ required: true, message: t.app.required }]}>
+            <Input />
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="locationId" label="Зона/участок">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="Выберите зону"
-                  options={flatLocs.map((l) => ({ value: l.id, label: l.name }))}
-                />
+              <Form.Item name="locationId" label={t.doc?.location}>
+                <Select allowClear showSearch optionFilterProp="label" placeholder={t.doc?.location}
+                  options={flatLocs.map((l) => ({ value: l.id, label: l.name }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="workItemId" label="Вид работ">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="Выберите работу"
-                  options={workItems.map((w) => ({
-                    value: w.id,
-                    label: w.code ? `${w.code}: ${w.name}` : w.name,
-                  }))}
-                />
+              <Form.Item name="workItemId" label={t.doc?.workItem}>
+                <Select allowClear showSearch optionFilterProp="label" placeholder={t.doc?.workItem}
+                  options={workItems.map((w) => ({ value: w.id, label: w.code ? `${w.code}: ${w.name}` : w.name }))} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="templateId" label="Шаблон">
+          <Form.Item name="templateId" label={t.menu?.templates || 'Şablon'}>
             <Select
               allowClear
               showSearch
               optionFilterProp="label"
-              placeholder="Выберите шаблон (необязательно)"
+              placeholder={t.menu?.templates}
               options={templates.map((t) => ({
                 value: t.id,
                 label: t.name,
@@ -563,7 +520,7 @@ const Documents: React.FC = () => {
 
       {/* Document Detail Drawer */}
       <Drawer
-        title={selectedDocument ? `${selectedDocument.number} — ${selectedDocument.title}` : 'Документ'}
+        title={selectedDocument ? `${selectedDocument.number} — ${selectedDocument.title}` : t.doc?.title}
         open={detailDrawerVisible}
         onClose={() => {
           setDetailDrawerVisible(false);
@@ -580,7 +537,7 @@ const Documents: React.FC = () => {
                     icon={<EditOutlined />}
                     onClick={() => setEditMode(!editMode)}
                   >
-                    {editMode ? 'Отмена' : 'Редактировать'}
+                    {editMode ? t.app.cancel : t.app.edit}
                   </Button>
                   <Button
                     type="primary"
@@ -590,7 +547,7 @@ const Documents: React.FC = () => {
                       setActionModalVisible(true);
                     }}
                   >
-                    На проверку
+                    {t.doc?.sendToReview}
                   </Button>
                 </>
               )}
@@ -603,7 +560,7 @@ const Documents: React.FC = () => {
                     setActionModalVisible(true);
                   }}
                 >
-                  Утвердить
+                  {t.doc?.sendToSign}
                 </Button>
               )}
               {selectedDocument.status === 'PENDING_SIGNATURE' && (
@@ -615,7 +572,7 @@ const Documents: React.FC = () => {
                     setActionModalVisible(true);
                   }}
                 >
-                  Подписать
+                  {t.doc?.sign}
                 </Button>
               )}
               {(selectedDocument.status === 'IN_REVIEW' ||
@@ -628,7 +585,7 @@ const Documents: React.FC = () => {
                     setActionModalVisible(true);
                   }}
                 >
-                  Отклонить
+                  {t.doc?.reject}
                 </Button>
               )}
               {selectedDocument.generatedFileUrl && (
@@ -651,7 +608,7 @@ const Documents: React.FC = () => {
               items={[
                 {
                   key: 'info',
-                  label: 'Информация',
+                  label: t.app.description,
                   children: editMode ? (
                     <div>
                       <DocumentForm
@@ -661,32 +618,32 @@ const Documents: React.FC = () => {
                         templateFields={selectedDocument.template?.formSchema}
                       />
                       <Button type="primary" onClick={handleEdit} style={{ marginTop: 16 }}>
-                        Сохранить
+                        {t.app.save}
                       </Button>
                     </div>
                   ) : (
                     <Descriptions bordered column={1} size="small">
-                      <Descriptions.Item label="Номер">
+                      <Descriptions.Item label={t.doc?.number}>
                         {selectedDocument.number}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Тип">
+                      <Descriptions.Item label={t.app.type}>
                         {selectedDocument.type}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Категория">
+                      <Descriptions.Item label={t.categories?.title || 'Kategori'}>
                         {selectedDocument.category}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Статус">
+                      <Descriptions.Item label={t.app.status}>
                         <Tag color={STATUS_CONFIG[selectedDocument.status]?.color}>
                           {STATUS_CONFIG[selectedDocument.status]?.label}
                         </Tag>
                       </Descriptions.Item>
-                      <Descriptions.Item label="Зона">
+                      <Descriptions.Item label={t.doc?.location}>
                         {selectedDocument.location?.name || '—'}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Вид работ">
+                      <Descriptions.Item label={t.doc?.workItem}>
                         {selectedDocument.workItem?.name || '—'}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Дата создания">
+                      <Descriptions.Item label={t.doc?.date}>
                         {dayjs(selectedDocument.createdAt).format('DD.MM.YYYY HH:mm')}
                       </Descriptions.Item>
                       {selectedDocument.formData &&
@@ -700,7 +657,7 @@ const Documents: React.FC = () => {
                 },
                 {
                   key: 'attachments',
-                  label: `Вложения (${selectedDocument.attachments?.length || 0})`,
+                  label: `${t.doc?.attachments || 'Ekler'} (${selectedDocument.attachments?.length || 0})`,
                   children: (
                     <div>
                       <FileUpload
@@ -720,14 +677,14 @@ const Documents: React.FC = () => {
                                 href={att.fileUrl}
                                 target="_blank"
                               >
-                                Скачать
+                                {t.app.download}
                               </Button>,
                             ]}
                           >
                             <List.Item.Meta
                               avatar={<FileTextOutlined />}
                               title={att.fileName}
-                              description={`${(att.fileSize / 1024).toFixed(1)} КБ — ${att.type}`}
+                              description={`${(att.fileSize / 1024).toFixed(1)} KB — ${att.type}`}
                             />
                           </List.Item>
                         )}
@@ -737,7 +694,7 @@ const Documents: React.FC = () => {
                 },
                 {
                   key: 'workflow',
-                  label: 'История',
+                  label: t.doc?.workflow || 'Geçmiş',
                   children: (
                     <WorkflowStatus
                       transitions={selectedDocument.transitions || []}
@@ -755,14 +712,14 @@ const Documents: React.FC = () => {
       <Modal
         title={
           actionType === 'SUBMIT'
-            ? 'Отправить на проверку'
+            ? t.doc?.sendToReview
             : actionType === 'APPROVE'
-            ? 'Утвердить документ'
+            ? t.doc?.sendToSign
             : actionType === 'SIGN'
-            ? 'Подписать документ'
+            ? t.doc?.sign
             : actionType === 'REJECT'
-            ? 'Отклонить документ'
-            : 'Действие'
+            ? t.doc?.reject
+            : t.app.actions
         }
         open={actionModalVisible}
         onOk={handleAction}
@@ -770,23 +727,23 @@ const Documents: React.FC = () => {
           setActionModalVisible(false);
           setActionComment('');
         }}
-        okText="Подтвердить"
-        cancelText="Отмена"
+        okText={t.app.confirm}
+        cancelText={t.app.cancel}
         confirmLoading={actionLoading}
         okButtonProps={{
           danger: actionType === 'REJECT',
         }}
       >
         <Form layout="vertical">
-          <Form.Item label="Комментарий">
+          <Form.Item label={t.corrections?.comments || 'Yorum'}>
             <Input.TextArea
               value={actionComment}
               onChange={(e) => setActionComment(e.target.value)}
               rows={3}
               placeholder={
                 actionType === 'REJECT'
-                  ? 'Укажите причину отклонения'
-                  : 'Комментарий (необязательно)'
+                  ? (t.corrections?.enterResolution || 'Red nedenini belirtin')
+                  : (t.corrections?.addComment || 'Yorum ekle...')
               }
             />
           </Form.Item>
