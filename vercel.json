@@ -3,14 +3,8 @@
   "installCommand": "cd frontend && npm install",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 30,
-      "includeFiles": "backend/**"
-    }
-  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/api/(.*)", "destination": "https://wornetpto.life:3000/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
