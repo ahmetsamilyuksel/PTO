@@ -17,7 +17,7 @@ import {
   FileOutlined,
 } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type { AttachmentType } from '../types';
 
 const { Dragger } = Upload;
@@ -83,7 +83,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         if (onUploaded) onUploaded();
       } catch (error) {
         onError?.(error as Error);
-        message.error('Ошибка загрузки файла');
+        message.error(getApiError(error, 'Ошибка загрузки файла'));
       }
     },
     onChange: (info) => {
@@ -104,8 +104,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
           await apiClient.delete(`/attachments/${file.response.id}`);
           message.success('Файл удалён');
           if (onUploaded) onUploaded();
-        } catch {
-          message.error('Ошибка удаления файла');
+        } catch (error) {
+          message.error(getApiError(error, 'Ошибка удаления файла'));
           return false;
         }
       }

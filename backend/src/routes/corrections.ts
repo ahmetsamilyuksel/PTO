@@ -45,7 +45,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json({ data: corrections, total, page: parseInt(page as string), pageSize: take });
   } catch (error) {
     console.error('Error fetching corrections:', error);
-    res.status(500).json({ error: 'Failed to fetch corrections' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch corrections: ${detail}` });
   }
 });
 
@@ -77,7 +78,8 @@ router.get('/stats', async (req: Request, res: Response) => {
     res.json({ total, open, inProgress, resolved, byErrorType, bySeverity });
   } catch (error) {
     console.error('Error fetching correction stats:', error);
-    res.status(500).json({ error: 'Failed to fetch stats' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch stats: ${detail}` });
   }
 });
 
@@ -109,7 +111,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.json(correction);
   } catch (error) {
     console.error('Error fetching correction:', error);
-    res.status(500).json({ error: 'Failed to fetch correction' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch correction: ${detail}` });
   }
 });
 
@@ -146,13 +149,19 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(201).json(correction);
   } catch (error) {
     console.error('Error creating correction:', error);
-    res.status(500).json({ error: 'Failed to create correction' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create correction: ${detail}` });
   }
 });
 
 // PUT /api/corrections/:id
 router.put('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.documentCorrection.findUnique({ where: { id: req.params.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Correction not found' });
+    }
+
     const userId = (req as any).userId;
     const { status, assignedToId, resolution, severity, dueDate } = req.body;
 
@@ -184,13 +193,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(correction);
   } catch (error) {
     console.error('Error updating correction:', error);
-    res.status(500).json({ error: 'Failed to update correction' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update correction: ${detail}` });
   }
 });
 
 // POST /api/corrections/:id/comments
 router.post('/:id/comments', async (req: Request, res: Response) => {
   try {
+    const correction = await prisma.documentCorrection.findUnique({ where: { id: req.params.id } });
+    if (!correction) {
+      return res.status(404).json({ error: 'Correction not found' });
+    }
+
     const userId = (req as any).userId;
     const { text } = req.body;
 
@@ -212,7 +227,8 @@ router.post('/:id/comments', async (req: Request, res: Response) => {
     res.status(201).json(comment);
   } catch (error) {
     console.error('Error adding comment:', error);
-    res.status(500).json({ error: 'Failed to add comment' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to add comment: ${detail}` });
   }
 });
 

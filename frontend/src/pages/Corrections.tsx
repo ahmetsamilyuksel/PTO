@@ -50,7 +50,9 @@ const Corrections: React.FC = () => {
       const res = await apiClient.get('/corrections', { params });
       setCorrections(res.data.data || []);
       setTotal(res.data.total || 0);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 
@@ -80,7 +82,9 @@ const Corrections: React.FC = () => {
       const res = await apiClient.get(`/corrections/${id}`);
       setSelectedCorrection(res.data);
       setDetailVisible(true);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const handleCreate = async (values: any) => {

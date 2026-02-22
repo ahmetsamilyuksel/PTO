@@ -27,7 +27,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: rules });
   } catch (error) {
     console.error('List matrix rules error:', error);
-    return res.status(500).json({ error: 'Error fetching document matrix rules' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching document matrix rules: ${detail}` });
   }
 });
 
@@ -48,7 +49,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(rule);
   } catch (error) {
     console.error('Get matrix rule error:', error);
-    return res.status(500).json({ error: 'Error fetching matrix rule' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching matrix rule: ${detail}` });
   }
 });
 
@@ -99,7 +101,8 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
     return res.status(201).json(rule);
   } catch (error) {
     console.error('Create matrix rule error:', error);
-    return res.status(500).json({ error: 'Error creating matrix rule' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating matrix rule: ${detail}` });
   }
 });
 
@@ -142,7 +145,8 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
     return res.json(rule);
   } catch (error) {
     console.error('Update matrix rule error:', error);
-    return res.status(500).json({ error: 'Error updating matrix rule' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating matrix rule: ${detail}` });
   }
 });
 
@@ -159,7 +163,8 @@ router.delete('/:id', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthR
     return res.json({ message: 'Matrix rule deleted' });
   } catch (error) {
     console.error('Delete matrix rule error:', error);
-    return res.status(500).json({ error: 'Error deleting matrix rule' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting matrix rule: ${detail}` });
   }
 });
 
@@ -291,7 +296,8 @@ router.post('/apply', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Apply matrix error:', error);
-    return res.status(500).json({ error: 'Error applying matrix rules' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error applying matrix rules: ${detail}` });
   }
 });
 
@@ -374,7 +380,8 @@ router.post('/seed-defaults', requireRole('ADMIN'), async (req: AuthRequest, res
     return res.json({ message: `Created ${created} default matrix rules`, total: defaults.length });
   } catch (error) {
     console.error('Seed defaults error:', error);
-    return res.status(500).json({ error: 'Error creating default matrix rules' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating default matrix rules: ${detail}` });
   }
 });
 

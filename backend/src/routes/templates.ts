@@ -31,7 +31,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: templates });
   } catch (error) {
     console.error('List templates error:', error);
-    return res.status(500).json({ error: 'Error fetching templates list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching templates list: ${detail}` });
   }
 });
 
@@ -52,7 +53,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(template);
   } catch (error) {
     console.error('Get template error:', error);
-    return res.status(500).json({ error: 'Error fetching template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching template: ${detail}` });
   }
 });
 
@@ -80,7 +82,8 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (req
     return res.status(201).json(template);
   } catch (error) {
     console.error('Create template error:', error);
-    return res.status(500).json({ error: 'Error creating template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating template: ${detail}` });
   }
 });
 
@@ -114,7 +117,8 @@ router.put('/:id', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), async (r
     return res.json(template);
   } catch (error) {
     console.error('Update template error:', error);
-    return res.status(500).json({ error: 'Error updating template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating template: ${detail}` });
   }
 });
 
@@ -144,7 +148,8 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
     return res.json({ message: 'Template deleted' });
   } catch (error) {
     console.error('Delete template error:', error);
-    return res.status(500).json({ error: 'Error deleting template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting template: ${detail}` });
   }
 });
 
@@ -173,7 +178,8 @@ router.post('/:id/duplicate', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'
     return res.status(201).json(duplicate);
   } catch (error) {
     console.error('Duplicate template error:', error);
-    return res.status(500).json({ error: 'Error copying template' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error copying template: ${detail}` });
   }
 });
 

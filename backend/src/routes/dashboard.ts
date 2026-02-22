@@ -156,7 +156,8 @@ router.get('/summary', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard summary error:', error);
-    return res.status(500).json({ error: 'Error fetching project summary' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching project summary: ${detail}` });
   }
 });
 
@@ -258,7 +259,8 @@ router.get('/my-tasks', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('My tasks error:', error);
-    return res.status(500).json({ error: 'Error fetching my tasks' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching my tasks: ${detail}` });
   }
 });
 
@@ -327,7 +329,8 @@ router.get('/document-stats', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Document stats error:', error);
-    return res.status(500).json({ error: 'Error fetching document statistics' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching document statistics: ${detail}` });
   }
 });
 
@@ -418,7 +421,8 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard overview error:', error);
-    return res.status(500).json({ error: 'Error fetching overall summary' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching overall summary: ${detail}` });
   }
 });
 

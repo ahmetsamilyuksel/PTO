@@ -31,7 +31,9 @@ const Categories: React.FC = () => {
     try {
       const res = await apiClient.get('/categories', { params: { projectId } });
       setCategories(res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 

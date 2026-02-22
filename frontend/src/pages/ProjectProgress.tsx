@@ -36,7 +36,9 @@ const ProjectProgress: React.FC = () => {
     try {
       const res = await apiClient.get('/progress/summary', { params: { projectId } });
       setSummary(res.data);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const fetchMilestones = async () => {
@@ -44,7 +46,9 @@ const ProjectProgress: React.FC = () => {
     try {
       const res = await apiClient.get('/progress', { params: { projectId } });
       setMilestones(res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 
