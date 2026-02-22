@@ -26,7 +26,8 @@ import correctionRoutes from './routes/corrections';
 import progressRoutes from './routes/progress';
 import teamRoutes from './routes/team';
 import adminRoutes from './routes/admin';
-import { initMinIO } from './services/storage';
+import { initStorage } from './services/storage';
+import path from 'path';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
@@ -87,6 +88,23 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Serve local uploaded files (only when STORAGE_TYPE=local)
+if (config.storage.type === 'local') {
+  app.use('/api/files', authMiddleware, (req, res, next) => {
+    const filePath = path.resolve(config.storage.localPath, req.path.replace(/^\//, ''));
+    const basePath = path.resolve(config.storage.localPath);
+    // Prevent directory traversal
+    if (!filePath.startsWith(basePath)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    return res.sendFile(filePath, (err) => {
+      if (err) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+    });
+  });
+}
+
 // Export app for Vercel serverless
 export default app;
 export { app };
@@ -98,8 +116,8 @@ if (!process.env.VERCEL) {
       await prisma.$connect();
       console.log('Database connected');
 
-      await initMinIO();
-      console.log('MinIO initialized');
+      await initStorage();
+      console.log('Storage initialized');
 
       app.listen(config.port, '0.0.0.0', () => {
         console.log(`${config.systemName} backend running on port ${config.port}`);

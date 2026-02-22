@@ -2,6 +2,10 @@ export const config = {
   port: parseInt(process.env.BACKEND_PORT || '3000', 10),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
   jwtExpiresIn: '24h',
+  storage: {
+    type: (process.env.STORAGE_TYPE || 'local') as 'local' | 'minio',
+    localPath: process.env.STORAGE_LOCAL_PATH || './uploads',
+  },
   minio: {
     endpoint: process.env.MINIO_ENDPOINT || 'localhost',
     port: parseInt(process.env.MINIO_PORT || '9000', 10),
