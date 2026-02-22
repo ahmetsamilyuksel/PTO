@@ -224,18 +224,19 @@ const Tasks: React.FC = () => {
       title: t.tasks?.title_col || 'Görev',
       dataIndex: 'title',
       key: 'title',
+      ellipsis: true,
       render: (text: string, record: any) => (
-        <Space direction="vertical" size={0}>
-          <Text strong style={{ cursor: 'pointer' }} onClick={() => openTaskDetail(record)}>{text}</Text>
-          {record.description && <Text type="secondary" style={{ fontSize: 12 }}>{record.description.slice(0, 60)}</Text>}
-        </Space>
+        <div style={{ minWidth: 0, cursor: 'pointer' }} onClick={() => openTaskDetail(record)}>
+          <Text strong ellipsis style={{ display: 'block' }}>{text}</Text>
+          {record.description && <Text type="secondary" style={{ fontSize: 12 }}>{record.description.slice(0, 50)}</Text>}
+        </div>
       ),
     },
     {
       title: t.tasks?.priority || 'Öncelik',
       dataIndex: 'priority',
       key: 'priority',
-      width: 100,
+      width: 90,
       render: (priority: string) => (
         <Tag color={priorityColors[priority]}>{priorityLabels[priority]}</Tag>
       ),
@@ -244,7 +245,7 @@ const Tasks: React.FC = () => {
       title: t.app.status,
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 110,
       render: (status: string) => (
         <Badge status={statusColors[status] as any} text={statusLabels[status]} />
       ),
@@ -252,7 +253,8 @@ const Tasks: React.FC = () => {
     {
       title: t.tasks?.assignees || 'Sorumlular',
       key: 'assignments',
-      width: 250,
+      width: 200,
+      responsive: ['md'] as any,
       render: (_: any, record: any) => (
         <Space wrap size={[4, 4]}>
           {record.assignments?.map((a: any) => (
@@ -275,7 +277,8 @@ const Tasks: React.FC = () => {
       title: t.tasks?.dueDate || 'Son Tarih',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      width: 120,
+      width: 100,
+      responsive: ['md'] as any,
       render: (date: string) => {
         if (!date) return '-';
         const d = dayjs(date);
@@ -284,25 +287,15 @@ const Tasks: React.FC = () => {
       },
     },
     {
-      title: t.app.actions,
+      title: '',
       key: 'actions',
-      width: 160,
+      width: 100,
       render: (_: any, record: any) => (
-        <Space>
-          <Tooltip title="Detay">
-            <Button size="small" icon={<EyeOutlined />} onClick={() => openTaskDetail(record)} />
-          </Tooltip>
-          {record.status === 'PENDING' && (
-            <Tooltip title={t.tasks?.markInProgress || 'İşleme Al'}>
-              <Button size="small" icon={<SyncOutlined />}
-                onClick={() => handleStatusChange(record.id, 'IN_PROGRESS')} />
-            </Tooltip>
-          )}
+        <Space size={4}>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => openTaskDetail(record)} />
           {record.status !== 'COMPLETED' && (
-            <Tooltip title={t.tasks?.complete || 'Tamamla'}>
-              <Button size="small" type="primary" icon={<CheckCircleOutlined />}
-                onClick={() => handleStatusChange(record.id, 'COMPLETED')} />
-            </Tooltip>
+            <Button size="small" type="primary" icon={<CheckCircleOutlined />}
+              onClick={() => handleStatusChange(record.id, 'COMPLETED')} />
           )}
           <Popconfirm title={t.app.confirm} onConfirm={() => handleDelete(record.id)}>
             <Button size="small" danger icon={<DeleteOutlined />} />
@@ -319,16 +312,16 @@ const Tasks: React.FC = () => {
   return (
     <div>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={6}>
+        <Col xs={12} sm={6}>
           <Card><Statistic title={t.tasks?.totalTasks || 'Toplam Görev'} value={total} prefix={<CalendarOutlined />} /></Card>
         </Col>
-        <Col xs={24} sm={6}>
+        <Col xs={12} sm={6}>
           <Card><Statistic title={t.tasks?.statuses?.PENDING || 'Bekliyor'} value={pendingCount} prefix={<ClockCircleOutlined />} valueStyle={{ color: '#1677ff' }} /></Card>
         </Col>
-        <Col xs={24} sm={6}>
+        <Col xs={12} sm={6}>
           <Card><Statistic title={t.tasks?.statuses?.IN_PROGRESS || 'Devam Ediyor'} value={inProgressCount} prefix={<ExclamationCircleOutlined />} valueStyle={{ color: '#faad14' }} /></Card>
         </Col>
-        <Col xs={24} sm={6}>
+        <Col xs={12} sm={6}>
           <Card><Statistic title={t.tasks?.statuses?.COMPLETED || 'Tamamlandı'} value={completedCount} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} /></Card>
         </Col>
       </Row>
@@ -363,7 +356,7 @@ const Tasks: React.FC = () => {
           dataSource={tasks}
           rowKey="id"
           loading={loading}
-          scroll={{ x: 800 }}
+          scroll={{ x: 450 }}
           pagination={{
             current: page,
             total,

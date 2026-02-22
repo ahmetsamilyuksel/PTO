@@ -175,13 +175,13 @@ const Journals: React.FC = () => {
   };
 
   const columns = [
-    { title: t.app.type, dataIndex: 'journalType', key: 'journalType', width: 200, render: (type: JournalType) => <Tag icon={<BookOutlined />} color="blue">{journalTypeLabels[type] || type}</Tag> },
+    { title: t.app.type, dataIndex: 'journalType', key: 'journalType', width: 180, ellipsis: true, render: (type: JournalType) => <Tag icon={<BookOutlined />} color="blue">{journalTypeLabels[type] || type}</Tag> },
     { title: t.app.name, dataIndex: 'title', key: 'title', ellipsis: true },
-    { title: t.app.status, dataIndex: 'status', key: 'status', width: 120, render: (status: JournalStatus) => { const cfg = journalStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
-    { title: t.corrections?.assignedTo || 'Sorumlu', key: 'responsible', width: 180, render: (_: unknown, record: Journal) => record.responsible?.fullName || '—' },
-    { title: t.project?.startDate || 'Başlangıç', dataIndex: 'startDate', key: 'startDate', width: 120, render: (date: string) => (date ? dayjs(date).format('DD.MM.YYYY') : '—') },
-    { title: t.app.actions, key: 'actions', width: 120, render: (_: unknown, record: Journal) => (
-      <Space>
+    { title: t.app.status, dataIndex: 'status', key: 'status', width: 100, render: (status: JournalStatus) => { const cfg = journalStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
+    { title: t.corrections?.assignedTo || 'Sorumlu', key: 'responsible', width: 150, ellipsis: true, responsive: ['md'] as any, render: (_: unknown, record: Journal) => record.responsible?.fullName || '—' },
+    { title: t.project?.startDate || 'Başlangıç', dataIndex: 'startDate', key: 'startDate', width: 100, responsive: ['md'] as any, render: (date: string) => (date ? dayjs(date).format('DD.MM.YYYY') : '—') },
+    { title: '', key: 'actions', width: 80, render: (_: unknown, record: Journal) => (
+      <Space size={4}>
         <Button type="link" icon={<EyeOutlined />} onClick={() => openJournalDetail(record.id)} />
         <Button type="link" icon={<DownloadOutlined />} onClick={() => handleExportPdf(record.id)} title={t.journal?.exportPdf} />
       </Space>
@@ -189,13 +189,13 @@ const Journals: React.FC = () => {
   ];
 
   const entryColumns = [
-    { title: '#', dataIndex: 'entryNumber', key: 'entryNumber', width: 60 },
-    { title: t.app.date, dataIndex: 'entryDate', key: 'entryDate', width: 110, render: (date: string) => dayjs(date).format('DD.MM.YYYY') },
-    { title: t.journal?.weather, dataIndex: 'weatherConditions', key: 'weatherConditions', width: 100 },
-    { title: t.journal?.crew, dataIndex: 'crewInfo', key: 'crewInfo', width: 80, render: (v: string) => (v || '—') },
+    { title: '#', dataIndex: 'entryNumber', key: 'entryNumber', width: 50 },
+    { title: t.app.date, dataIndex: 'entryDate', key: 'entryDate', width: 100, render: (date: string) => dayjs(date).format('DD.MM.YYYY') },
+    { title: t.journal?.weather, dataIndex: 'weatherConditions', key: 'weatherConditions', width: 90, responsive: ['md'] as any },
+    { title: t.journal?.crew, dataIndex: 'crewInfo', key: 'crewInfo', width: 70, responsive: ['lg'] as any, render: (v: string) => (v || '—') },
     { title: t.journal?.workDescription, dataIndex: 'workDescription', key: 'workDescription', ellipsis: true },
-    { title: t.journal?.materialsUsed, dataIndex: 'materialsUsed', key: 'materialsUsed', width: 150, ellipsis: true },
-    { title: t.journal?.controlActions, dataIndex: 'controlActions', key: 'controlActions', width: 150, ellipsis: true },
+    { title: t.journal?.materialsUsed, dataIndex: 'materialsUsed', key: 'materialsUsed', width: 130, ellipsis: true, responsive: ['lg'] as any },
+    { title: t.journal?.controlActions, dataIndex: 'controlActions', key: 'controlActions', width: 130, ellipsis: true, responsive: ['lg'] as any },
   ];
 
   return (
@@ -204,7 +204,7 @@ const Journals: React.FC = () => {
         <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.journal?.title}</Title></Col>
         <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.app.create}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={journals} rowKey="id" loading={loading} pagination={false} scroll={{ x: 800 }} />
+      <Table columns={columns} dataSource={journals} rowKey="id" loading={loading} pagination={false} scroll={{ x: 450 }} />
 
       <Modal title={t.app.create} open={createModalVisible} onOk={handleCreateJournal} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={createForm} layout="vertical">

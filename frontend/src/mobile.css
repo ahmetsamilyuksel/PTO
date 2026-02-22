@@ -8,7 +8,12 @@
   }
 
   .ant-table {
-    min-width: 600px;
+    min-width: auto;
+  }
+
+  .ant-table-cell {
+    padding: 8px 8px !important;
+    font-size: 13px;
   }
 
   /* Modals: full width on mobile */
@@ -43,6 +48,15 @@
     min-height: 40px !important;
   }
 
+  .ant-card-head-title {
+    font-size: 14px !important;
+  }
+
+  .ant-card-extra {
+    width: 100% !important;
+    margin-top: 8px;
+  }
+
   /* Descriptions: single column on mobile */
   .ant-descriptions-view table {
     display: block;
@@ -57,12 +71,22 @@
   .ant-space-wrap {
     gap: 8px !important;
   }
+
+  /* Statistic cards: compact */
+  .ant-statistic-title {
+    font-size: 12px !important;
+  }
+
+  .ant-statistic-content {
+    font-size: 20px !important;
+  }
 }
 
 /* Small phones */
 @media (max-width: 480px) {
-  .ant-table {
-    min-width: 500px;
+  .ant-table-cell {
+    padding: 6px 6px !important;
+    font-size: 12px;
   }
 
   .ant-modal {
