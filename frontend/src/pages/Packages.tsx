@@ -149,15 +149,15 @@ const Packages: React.FC = () => {
 
   const columns = [
     { title: t.app.name, dataIndex: 'name', key: 'name', ellipsis: true },
-    { title: t.package?.period || 'Dönem', key: 'period', width: 200, render: (_: unknown, record: any) => {
+    { title: t.package?.period || 'Dönem', key: 'period', width: 180, ellipsis: true, responsive: ['md'] as any, render: (_: unknown, record: any) => {
       if (record.periodFrom && record.periodTo) return `${dayjs(record.periodFrom).format('DD.MM.YYYY')} — ${dayjs(record.periodTo).format('DD.MM.YYYY')}`;
       if (record.periodFrom) return dayjs(record.periodFrom).format('DD.MM.YYYY');
       return t.app.noData;
     }},
-    { title: t.doc?.title || 'Doküman', key: 'docCount', width: 110, render: (_: unknown, record: any) => record._count?.items || 0 },
-    { title: t.app.status, dataIndex: 'status', key: 'status', width: 120, render: (status: PackageStatus) => { const cfg = packageStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
-    { title: t.app.actions, key: 'actions', width: 150, render: (_: unknown, record: Package) => (
-      <Space>
+    { title: t.doc?.title || 'Doküman', key: 'docCount', width: 80, render: (_: unknown, record: any) => record._count?.items || 0 },
+    { title: t.app.status, dataIndex: 'status', key: 'status', width: 110, render: (status: PackageStatus) => { const cfg = packageStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
+    { title: '', key: 'actions', width: 100, render: (_: unknown, record: Package) => (
+      <Space size={4}>
         <Button type="link" icon={<EyeOutlined />} onClick={() => openPackageDetail(record.id)} />
         <Button type="link" icon={<FileZipOutlined />} onClick={() => handleDownloadZip(record.id)} title={t.package?.download} />
         <Button type="link" icon={<OrderedListOutlined />} onClick={() => handleDownloadInventory(record.id)} title={t.package?.inventory} />
@@ -185,7 +185,7 @@ const Packages: React.FC = () => {
         <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.package?.title}</Title></Col>
         <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setWizardVisible(true)}>{t.package?.create}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={packages} rowKey="id" loading={loading} pagination={false} scroll={{ x: 700 }} />
+      <Table columns={columns} dataSource={packages} rowKey="id" loading={loading} pagination={false} scroll={{ x: 400 }} />
 
       <Modal title={t.package?.create} open={wizardVisible}
         onCancel={() => { setWizardVisible(false); wizardForm.resetFields(); setWizardStep(0); setSelectedDocIds([]); setAvailableDocs([]); }}

@@ -5,7 +5,7 @@
   "description": "Construction DocOps System (ПТО DocOps)",
   "scripts": {
     "build": "cd frontend && npm run build",
-    "postinstall": "cd backend && npm install && npx prisma generate && npx prisma migrate deploy || true",
+    "postinstall": "cd backend && npm install --include=dev && npx prisma generate && npx prisma migrate deploy || true",
     "dev": "docker compose up --build"
   },
   "devDependencies": {

@@ -282,14 +282,17 @@ const Documents: React.FC = () => {
       title: '№',
       dataIndex: 'number',
       key: 'number',
-      width: 120,
+      width: 100,
+      ellipsis: true,
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
       title: t.app.type,
       dataIndex: 'type',
       key: 'type',
-      width: 200,
+      width: 160,
+      ellipsis: true,
+      responsive: ['md'] as any,
     },
     {
       title: t.app.name,
@@ -300,14 +303,16 @@ const Documents: React.FC = () => {
     {
       title: t.doc?.location,
       key: 'location',
-      width: 150,
+      width: 130,
+      ellipsis: true,
+      responsive: ['lg'] as any,
       render: (_: unknown, record: Document) => record.location?.name || '—',
     },
     {
       title: t.app.status,
       dataIndex: 'status',
       key: 'status',
-      width: 130,
+      width: 120,
       render: (status: DocumentStatus) => {
         const cfg = STATUS_CONFIG[status] || { color: 'default', label: status };
         return <Tag color={cfg.color}>{cfg.label}</Tag>;
@@ -317,15 +322,16 @@ const Documents: React.FC = () => {
       title: t.app.date,
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 110,
+      width: 100,
+      responsive: ['md'] as any,
       render: (date: string) => dayjs(date).format('DD.MM.YYYY'),
     },
     {
-      title: t.app.actions,
+      title: '',
       key: 'actions',
-      width: 100,
+      width: 70,
       render: (_: unknown, record: Document) => (
-        <Space>
+        <Space size={4}>
           <Button
             type="link"
             icon={<EyeOutlined />}
@@ -417,7 +423,7 @@ const Documents: React.FC = () => {
         dataSource={documents}
         rowKey="id"
         loading={loading}
-        scroll={{ x: 800 }}
+        scroll={{ x: 500 }}
         pagination={{
           current: page,
           pageSize,

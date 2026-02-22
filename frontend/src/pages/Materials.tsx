@@ -185,15 +185,15 @@ const Materials: React.FC = () => {
   };
 
   const columns = [
-    { title: t.material?.name, dataIndex: 'name', key: 'name', render: (text: string) => <Text strong>{text}</Text> },
-    { title: t.material?.brand, dataIndex: 'brand', key: 'brand', width: 120 },
-    { title: t.material?.batchNumber, dataIndex: 'batchNumber', key: 'batchNumber', width: 120 },
-    { title: t.material?.supplier, key: 'supplier', width: 150, render: (_: unknown, record: any) => record.supplier?.name || record.deliveryNote || '—' },
-    { title: t.material?.arrivalDate, dataIndex: 'arrivalDate', key: 'arrivalDate', width: 120, render: (date: string) => (date ? dayjs(date).format('DD.MM.YYYY') : '—') },
-    { title: t.material?.certificates, key: 'certs', width: 150, render: (_: unknown, record: Material) => getCertStatus(record) },
-    { title: t.material?.incomingControl, key: 'control', width: 150, render: (_: unknown, record: Material) => getControlStatus(record) },
-    { title: t.app.status, dataIndex: 'status', key: 'status', width: 120, render: (status: MaterialStatus) => { const cfg = materialStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
-    { title: '', key: 'actions', width: 60, render: (_: unknown, record: Material) => <Button type="link" icon={<EyeOutlined />} onClick={() => openDetail(record.id)} /> },
+    { title: t.material?.name, dataIndex: 'name', key: 'name', ellipsis: true, render: (text: string) => <Text strong>{text}</Text> },
+    { title: t.material?.brand, dataIndex: 'brand', key: 'brand', width: 100, ellipsis: true, responsive: ['md'] as any },
+    { title: t.material?.batchNumber, dataIndex: 'batchNumber', key: 'batchNumber', width: 100, responsive: ['lg'] as any },
+    { title: t.material?.supplier, key: 'supplier', width: 130, ellipsis: true, responsive: ['lg'] as any, render: (_: unknown, record: any) => record.supplier?.name || record.deliveryNote || '—' },
+    { title: t.material?.arrivalDate, dataIndex: 'arrivalDate', key: 'arrivalDate', width: 100, responsive: ['md'] as any, render: (date: string) => (date ? dayjs(date).format('DD.MM.YYYY') : '—') },
+    { title: t.material?.certificates, key: 'certs', width: 130, responsive: ['md'] as any, render: (_: unknown, record: Material) => getCertStatus(record) },
+    { title: t.material?.incomingControl, key: 'control', width: 120, responsive: ['lg'] as any, render: (_: unknown, record: Material) => getControlStatus(record) },
+    { title: t.app.status, dataIndex: 'status', key: 'status', width: 110, render: (status: MaterialStatus) => { const cfg = materialStatusLabels[status] || { color: 'default', label: status }; return <Tag color={cfg.color}>{cfg.label}</Tag>; } },
+    { title: '', key: 'actions', width: 50, render: (_: unknown, record: Material) => <Button type="link" icon={<EyeOutlined />} onClick={() => openDetail(record.id)} /> },
   ];
 
   return (
@@ -202,7 +202,7 @@ const Materials: React.FC = () => {
         <Col xs={24} sm={12}><Title level={3} style={{ margin: 0 }}>{t.material?.title}</Title></Col>
         <Col xs={24} sm={12} style={{ textAlign: 'right' }}><Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateModalVisible(true)}>{t.material?.addMaterial}</Button></Col>
       </Row>
-      <Table columns={columns} dataSource={materials} rowKey="id" loading={loading} scroll={{ x: 900 }} pagination={{ current: page, pageSize, total, showSizeChanger: true, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (p, ps) => { setPage(p); setPageSize(ps); } }} />
+      <Table columns={columns} dataSource={materials} rowKey="id" loading={loading} scroll={{ x: 450 }} pagination={{ current: page, pageSize, total, showSizeChanger: true, showTotal: (totalCount) => `${totalCount} ${t.tasks?.items || 'kayıt'}`, onChange: (p, ps) => { setPage(p); setPageSize(ps); } }} />
 
       <Modal title={t.material?.addMaterial} open={createModalVisible} onOk={handleCreate} onCancel={() => { setCreateModalVisible(false); createForm.resetFields(); }} okText={t.app.create} cancelText={t.app.cancel} confirmLoading={createLoading} width="95%" style={{ maxWidth: 600 }}>
         <Form form={createForm} layout="vertical">

@@ -147,13 +147,14 @@ const Team: React.FC = () => {
     {
       title: t.person.fio,
       key: 'fio',
+      ellipsis: true,
       render: (_: any, record: any) => (
         <Space>
-          <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1677ff' }}>{record.person?.fio?.[0]}</Avatar>
-          <Space direction="vertical" size={0}>
-            <Text strong>{record.person?.fio}</Text>
+          <Avatar icon={<UserOutlined />} size="small" style={{ backgroundColor: '#1677ff', flexShrink: 0 }}>{record.person?.fio?.[0]}</Avatar>
+          <div style={{ minWidth: 0 }}>
+            <Text strong ellipsis style={{ display: 'block', maxWidth: 180 }}>{record.person?.fio}</Text>
             <Text type="secondary" style={{ fontSize: 12 }}>{record.person?.position}</Text>
-          </Space>
+          </div>
         </Space>
       ),
     },
@@ -161,45 +162,51 @@ const Team: React.FC = () => {
       title: t.person.email,
       key: 'email',
       width: 200,
+      ellipsis: true,
+      responsive: ['md'] as any,
       render: (_: any, record: any) => (
-        <Space direction="vertical" size={0}>
-          <Text><MailOutlined /> {record.person?.email}</Text>
-          {record.person?.phone && <Text type="secondary"><PhoneOutlined /> {record.person?.phone}</Text>}
-        </Space>
+        <div style={{ minWidth: 0 }}>
+          <Text ellipsis style={{ display: 'block' }}><MailOutlined /> {record.person?.email}</Text>
+          {record.person?.phone && <Text type="secondary" style={{ fontSize: 12 }}><PhoneOutlined /> {record.person?.phone}</Text>}
+        </div>
       ),
     },
     {
       title: t.person.organization,
       key: 'organization',
-      width: 180,
+      width: 150,
+      ellipsis: true,
+      responsive: ['lg'] as any,
       render: (_: any, record: any) => record.person?.organization?.shortName || record.person?.organization?.name || '-',
     },
     {
       title: t.team?.projectRole || 'Project Role',
       dataIndex: 'projectRole',
       key: 'projectRole',
-      width: 200,
+      width: 180,
       render: (role: string) => <Tag color={roleColors[role]}>{(projectRoleLabels as any)[role] || role}</Tag>,
     },
     {
       title: t.team?.systemRole || 'System Role',
       key: 'systemRole',
-      width: 150,
+      width: 130,
+      responsive: ['lg'] as any,
       render: (_: any, record: any) => <Tag>{(userRoleLabels as any)[record.person?.role] || record.person?.role}</Tag>,
     },
     {
       title: t.team?.canSign || 'Can Sign',
       dataIndex: 'canSign',
       key: 'canSign',
-      width: 100,
+      width: 80,
+      responsive: ['md'] as any,
       render: (canSign: boolean) => canSign ? <Tag color="green">{t.app.yes}</Tag> : <Tag>{t.app.no}</Tag>,
     },
     {
-      title: t.app.actions,
+      title: '',
       key: 'actions',
-      width: 120,
+      width: 80,
       render: (_: any, record: any) => (
-        <Space>
+        <Space size={4}>
           <Button size="small" icon={<EditOutlined />} onClick={() => {
             setEditMember(record);
             editForm.setFieldsValue({
@@ -231,7 +238,7 @@ const Team: React.FC = () => {
           </Space>
         }
       >
-        <Table columns={columns} dataSource={members} rowKey="id" loading={loading} pagination={false} scroll={{ x: 900 }} />
+        <Table columns={columns} dataSource={members} rowKey="id" loading={loading} pagination={false} scroll={{ x: 500 }} size="middle" />
       </Card>
 
       {/* Add Existing User Modal */}
