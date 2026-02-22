@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "installCommand": "npm install && cd frontend && npm install",
-  "buildCommand": "cd backend && npx prisma generate && (npx prisma migrate deploy || true) && (npx --yes tsx@4 prisma/seed.ts || true) && cd ../frontend && npm run build",
+  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.ts": {
