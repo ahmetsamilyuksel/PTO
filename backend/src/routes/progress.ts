@@ -19,7 +19,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(milestones);
   } catch (error) {
     console.error('Error fetching milestones:', error);
-    res.status(500).json({ error: 'Failed to fetch milestones' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch milestones: ${detail}` });
   }
 });
 
@@ -96,7 +97,8 @@ router.get('/summary', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching progress summary:', error);
-    res.status(500).json({ error: 'Failed to fetch progress summary' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch progress summary: ${detail}` });
   }
 });
 
@@ -122,13 +124,19 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(201).json(milestone);
   } catch (error) {
     console.error('Error creating milestone:', error);
-    res.status(500).json({ error: 'Failed to create milestone' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create milestone: ${detail}` });
   }
 });
 
 // PUT /api/progress/:id
 router.put('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.projectMilestone.findUnique({ where: { id: req.params.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Milestone not found' });
+    }
+
     const { title, description, dueDate, status, progress, sortOrder } = req.body;
 
     const updateData: any = {};
@@ -153,13 +161,19 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(milestone);
   } catch (error) {
     console.error('Error updating milestone:', error);
-    res.status(500).json({ error: 'Failed to update milestone' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update milestone: ${detail}` });
   }
 });
 
 // DELETE /api/progress/:id
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.projectMilestone.findUnique({ where: { id: req.params.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Milestone not found' });
+    }
+
     await prisma.projectMilestone.delete({
       where: { id: req.params.id },
     });
@@ -167,7 +181,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json({ message: 'Milestone deleted' });
   } catch (error) {
     console.error('Error deleting milestone:', error);
-    res.status(500).json({ error: 'Failed to delete milestone' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to delete milestone: ${detail}` });
   }
 });
 
