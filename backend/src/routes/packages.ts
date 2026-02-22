@@ -11,7 +11,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     const { projectId, status, page = '1', limit = '20' } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -36,7 +36,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: packages, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List packages error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка комплектов ИД' });
+    return res.status(500).json({ error: 'Error fetching package list' });
   }
 });
 
@@ -68,13 +68,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!pkg) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     return res.json(pkg);
   } catch (error) {
     console.error('Get package error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении комплекта ИД' });
+    return res.status(500).json({ error: 'Error fetching package' });
   }
 });
 
@@ -84,12 +84,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { projectId, name, description, periodFrom, periodTo } = req.body;
 
     if (!projectId || !name) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, name' });
+      return res.status(400).json({ error: 'Required fields: projectId, name' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const pkg = await prisma.package.create({
@@ -106,7 +106,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(pkg);
   } catch (error) {
     console.error('Create package error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании комплекта ИД' });
+    return res.status(500).json({ error: 'Error creating package' });
   }
 });
 
@@ -115,11 +115,11 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.package.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (['GENERATING', 'DELIVERED'].includes(existing.status)) {
-      return res.status(400).json({ error: 'Нельзя редактировать комплект в текущем статусе' });
+      return res.status(400).json({ error: 'Cannot edit package in current status' });
     }
 
     const { name, description, periodFrom, periodTo } = req.body;
@@ -137,7 +137,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(pkg);
   } catch (error) {
     console.error('Update package error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении комплекта ИД' });
+    return res.status(500).json({ error: 'Error updating package' });
   }
 });
 
@@ -146,21 +146,21 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.package.findUnique({ where: { id: req.params.id } });
     if (!existing) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (existing.status === 'DELIVERED') {
-      return res.status(400).json({ error: 'Нельзя удалить переданный комплект ИД' });
+      return res.status(400).json({ error: 'Cannot delete a delivered package' });
     }
 
     // Delete items first
     await prisma.packageItem.deleteMany({ where: { packageId: req.params.id } });
     await prisma.package.delete({ where: { id: req.params.id } });
 
-    return res.json({ message: 'Комплект ИД удалён' });
+    return res.json({ message: 'Package deleted' });
   } catch (error) {
     console.error('Delete package error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении комплекта ИД' });
+    return res.status(500).json({ error: 'Error deleting package' });
   }
 });
 
@@ -173,26 +173,26 @@ router.post('/:id/items', async (req: AuthRequest, res: Response) => {
   try {
     const pkg = await prisma.package.findUnique({ where: { id: req.params.id } });
     if (!pkg) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (!['DRAFT', 'READY'].includes(pkg.status)) {
-      return res.status(400).json({ error: 'Можно добавлять документы только в черновик или готовый комплект' });
+      return res.status(400).json({ error: 'Can only add documents to a draft or ready package' });
     }
 
     const { documentId, folderPath, sortOrder } = req.body;
 
     if (!documentId || !folderPath) {
-      return res.status(400).json({ error: 'Обязательные поля: documentId, folderPath' });
+      return res.status(400).json({ error: 'Required fields: documentId, folderPath' });
     }
 
     const document = await prisma.document.findUnique({ where: { id: documentId } });
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (document.projectId !== pkg.projectId) {
-      return res.status(400).json({ error: 'Документ принадлежит другому проекту' });
+      return res.status(400).json({ error: 'Document belongs to a different project' });
     }
 
     const item = await prisma.packageItem.create({
@@ -220,10 +220,10 @@ router.post('/:id/items', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(item);
   } catch (error: any) {
     if (error?.code === 'P2002') {
-      return res.status(409).json({ error: 'Документ уже добавлен в данный комплект' });
+      return res.status(409).json({ error: 'Document already added to this package' });
     }
     console.error('Add package item error:', error);
-    return res.status(500).json({ error: 'Ошибка при добавлении документа в комплект' });
+    return res.status(500).json({ error: 'Error adding document to package' });
   }
 });
 
@@ -232,16 +232,16 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
   try {
     const pkg = await prisma.package.findUnique({ where: { id: req.params.id } });
     if (!pkg) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (!['DRAFT', 'READY'].includes(pkg.status)) {
-      return res.status(400).json({ error: 'Можно добавлять документы только в черновик или готовый комплект' });
+      return res.status(400).json({ error: 'Can only add documents to a draft or ready package' });
     }
 
     const { items } = req.body; // [{ documentId, folderPath, sortOrder }]
     if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Обязательное поле: items (массив)' });
+      return res.status(400).json({ error: 'Required field: items (array)' });
     }
 
     const results: any[] = [];
@@ -250,7 +250,7 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
     for (const item of items) {
       try {
         if (!item.documentId || !item.folderPath) {
-          errors.push(`Пропущен элемент без documentId или folderPath`);
+          errors.push(`Skipped item without documentId or folderPath`);
           continue;
         }
 
@@ -265,9 +265,9 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
         results.push(created);
       } catch (err: any) {
         if (err?.code === 'P2002') {
-          errors.push(`Документ ${item.documentId} уже в комплекте`);
+          errors.push(`Document ${item.documentId} already in package`);
         } else {
-          errors.push(`Ошибка для документа ${item.documentId}`);
+          errors.push(`Error for document ${item.documentId}`);
         }
       }
     }
@@ -287,7 +287,7 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Bulk add package items error:', error);
-    return res.status(500).json({ error: 'Ошибка при массовом добавлении документов в комплект' });
+    return res.status(500).json({ error: 'Error bulk adding documents to package' });
   }
 });
 
@@ -296,15 +296,15 @@ router.delete('/:packageId/items/:itemId', async (req: AuthRequest, res: Respons
   try {
     const item = await prisma.packageItem.findUnique({ where: { id: req.params.itemId } });
     if (!item || item.packageId !== req.params.packageId) {
-      return res.status(404).json({ error: 'Элемент комплекта не найден' });
+      return res.status(404).json({ error: 'Package item not found' });
     }
 
     await prisma.packageItem.delete({ where: { id: req.params.itemId } });
 
-    return res.json({ message: 'Документ удалён из комплекта' });
+    return res.json({ message: 'Document removed from package' });
   } catch (error) {
     console.error('Remove package item error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении документа из комплекта' });
+    return res.status(500).json({ error: 'Error removing document from package' });
   }
 });
 
@@ -340,18 +340,18 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
     });
 
     if (!pkg) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (pkg.items.length === 0) {
-      return res.status(400).json({ error: 'Комплект не содержит документов' });
+      return res.status(400).json({ error: 'Package contains no documents' });
     }
 
     // Validate all documents have files
     const missingFiles = pkg.items.filter((item) => !item.document.filePath);
     if (missingFiles.length > 0) {
       return res.status(400).json({
-        error: 'Не все документы имеют сгенерированные файлы',
+        error: 'Not all documents have generated files',
         missingDocuments: missingFiles.map((item) => ({
           documentId: item.document.id,
           title: item.document.title,
@@ -365,7 +365,7 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
       const { allowUnsigned } = req.body;
       if (!allowUnsigned) {
         return res.status(400).json({
-          error: 'Не все документы подписаны. Передайте allowUnsigned: true для продолжения',
+          error: 'Not all documents are signed. Pass allowUnsigned: true to proceed',
           unsignedDocuments: unsignedDocs.map((item) => ({
             documentId: item.document.id,
             title: item.document.title,
@@ -419,7 +419,7 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
     });
 
     return res.json({
-      message: 'Комплект ИД сформирован',
+      message: 'Package generated',
       packageId: pkg.id,
       filePath: zipPath,
       opisPath,
@@ -433,7 +433,7 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
       where: { id: req.params.id },
       data: { status: 'DRAFT' },
     }).catch(() => {});
-    return res.status(500).json({ error: 'Ошибка при формировании комплекта ИД' });
+    return res.status(500).json({ error: 'Error generating package' });
   }
 });
 
@@ -442,11 +442,11 @@ router.put('/:id/deliver', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), 
   try {
     const pkg = await prisma.package.findUnique({ where: { id: req.params.id } });
     if (!pkg) {
-      return res.status(404).json({ error: 'Комплект ИД не найден' });
+      return res.status(404).json({ error: 'Package not found' });
     }
 
     if (pkg.status !== 'READY') {
-      return res.status(400).json({ error: 'Можно передать только сформированный комплект (статус READY)' });
+      return res.status(400).json({ error: 'Can only deliver a generated package (status READY)' });
     }
 
     const updated = await prisma.package.update({
@@ -454,10 +454,10 @@ router.put('/:id/deliver', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), 
       data: { status: 'DELIVERED' },
     });
 
-    return res.json({ message: 'Комплект ИД отмечен как переданный', package: updated });
+    return res.json({ message: 'Package marked as delivered', package: updated });
   } catch (error) {
     console.error('Deliver package error:', error);
-    return res.status(500).json({ error: 'Ошибка при передаче комплекта ИД' });
+    return res.status(500).json({ error: 'Error delivering package' });
   }
 });
 

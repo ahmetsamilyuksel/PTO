@@ -8,7 +8,7 @@ import {
   AppstoreOutlined,
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { Text } = Typography;
@@ -47,8 +47,8 @@ const Categories: React.FC = () => {
       setEditCategory(null);
       form.resetFields();
       fetchCategories();
-    } catch (err: any) {
-      message.error(err.response?.data?.error || t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -57,8 +57,8 @@ const Categories: React.FC = () => {
       await apiClient.delete(`/categories/${id}`);
       message.success(t.app.success);
       fetchCategories();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -66,7 +66,9 @@ const Categories: React.FC = () => {
     try {
       await apiClient.put(`/categories/${id}`, { isActive: !isActive });
       fetchCategories();
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const columns = [

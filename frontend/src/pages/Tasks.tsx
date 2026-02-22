@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { TextArea } = Input;
@@ -110,8 +110,9 @@ const Tasks: React.FC = () => {
       form.resetFields();
       fetchTasks();
       fetchReminders();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -126,8 +127,8 @@ const Tasks: React.FC = () => {
         const res = await apiClient.get(`/tasks/${taskId}`);
         setSelectedTask(res.data);
       }
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -139,8 +140,8 @@ const Tasks: React.FC = () => {
       const res = await apiClient.get(`/tasks/${taskId}`);
       setSelectedTask(res.data);
       fetchTasks();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -151,8 +152,8 @@ const Tasks: React.FC = () => {
       const res = await apiClient.post(`/tasks/${selectedTask.id}/message`, { text: newMessage.trim() });
       setTaskMessages(res.data.messages || []);
       setNewMessage('');
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
     setSendingMessage(false);
   };
@@ -162,8 +163,8 @@ const Tasks: React.FC = () => {
       await apiClient.delete(`/tasks/${taskId}`);
       message.success(t.app.success);
       fetchTasks();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 

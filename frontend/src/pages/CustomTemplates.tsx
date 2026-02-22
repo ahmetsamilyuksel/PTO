@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { Text } = Typography;
@@ -77,8 +77,8 @@ const CustomTemplates: React.FC = () => {
       setFileList([]);
       form.resetFields();
       fetchTemplates();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -87,8 +87,8 @@ const CustomTemplates: React.FC = () => {
       await apiClient.delete(`/custom-templates/${id}`);
       message.success(t.app.success);
       fetchTemplates();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 

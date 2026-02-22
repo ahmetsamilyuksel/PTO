@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { Text, Title } = Typography;
@@ -72,8 +72,8 @@ const ProjectProgress: React.FC = () => {
       form.resetFields();
       fetchMilestones();
       fetchSummary();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -83,7 +83,9 @@ const ProjectProgress: React.FC = () => {
       await apiClient.put(`/progress/${id}`, { progress, status });
       fetchMilestones();
       fetchSummary();
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -92,8 +94,8 @@ const ProjectProgress: React.FC = () => {
       message.success(t.app.success);
       fetchMilestones();
       fetchSummary();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -103,8 +105,8 @@ const ProjectProgress: React.FC = () => {
       message.success(t.app.success);
       fetchMilestones();
       fetchSummary();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 

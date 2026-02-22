@@ -13,7 +13,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -49,7 +49,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: materials, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List materials error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка материалов' });
+    return res.status(500).json({ error: 'Error fetching materials list' });
   }
 });
 
@@ -80,13 +80,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     return res.json(material);
   } catch (error) {
     console.error('Get material error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении материала' });
+    return res.status(500).json({ error: 'Error fetching material' });
   }
 });
 
@@ -100,12 +100,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!projectId || !name) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, name' });
+      return res.status(400).json({ error: 'Required fields: projectId, name' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const material = await prisma.material.create({
@@ -127,7 +127,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(material);
   } catch (error) {
     console.error('Create material error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании материала' });
+    return res.status(500).json({ error: 'Error creating material' });
   }
 });
 
@@ -136,7 +136,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const {
@@ -164,7 +164,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(material);
   } catch (error) {
     console.error('Update material error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении материала' });
+    return res.status(500).json({ error: 'Error updating material' });
   }
 });
 
@@ -173,7 +173,7 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     await prisma.material.update({
@@ -181,10 +181,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Материал удалён' });
+    return res.json({ message: 'Material deleted' });
   } catch (error) {
     console.error('Delete material error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении материала' });
+    return res.status(500).json({ error: 'Error deleting material' });
   }
 });
 
@@ -197,7 +197,7 @@ router.get('/:id/certificates', async (req: AuthRequest, res: Response) => {
   try {
     const material = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const certificates = await prisma.materialCertificate.findMany({
@@ -208,7 +208,7 @@ router.get('/:id/certificates', async (req: AuthRequest, res: Response) => {
     return res.json({ data: certificates });
   } catch (error) {
     console.error('List certificates error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении сертификатов' });
+    return res.status(500).json({ error: 'Error fetching certificates' });
   }
 });
 
@@ -217,7 +217,7 @@ router.post('/:id/certificates', async (req: AuthRequest, res: Response) => {
   try {
     const material = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const {
@@ -226,7 +226,7 @@ router.post('/:id/certificates', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!certType) {
-      return res.status(400).json({ error: 'Обязательное поле: certType' });
+      return res.status(400).json({ error: 'Required field: certType' });
     }
 
     const certificate = await prisma.materialCertificate.create({
@@ -246,7 +246,7 @@ router.post('/:id/certificates', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(certificate);
   } catch (error) {
     console.error('Create certificate error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании сертификата' });
+    return res.status(500).json({ error: 'Error creating certificate' });
   }
 });
 
@@ -255,7 +255,7 @@ router.put('/:materialId/certificates/:certId', async (req: AuthRequest, res: Re
   try {
     const cert = await prisma.materialCertificate.findUnique({ where: { id: req.params.certId } });
     if (!cert || cert.materialId !== req.params.materialId) {
-      return res.status(404).json({ error: 'Сертификат не найден' });
+      return res.status(404).json({ error: 'Certificate not found' });
     }
 
     const {
@@ -280,7 +280,7 @@ router.put('/:materialId/certificates/:certId', async (req: AuthRequest, res: Re
     return res.json(updated);
   } catch (error) {
     console.error('Update certificate error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении сертификата' });
+    return res.status(500).json({ error: 'Error updating certificate' });
   }
 });
 
@@ -289,15 +289,15 @@ router.delete('/:materialId/certificates/:certId', async (req: AuthRequest, res:
   try {
     const cert = await prisma.materialCertificate.findUnique({ where: { id: req.params.certId } });
     if (!cert || cert.materialId !== req.params.materialId) {
-      return res.status(404).json({ error: 'Сертификат не найден' });
+      return res.status(404).json({ error: 'Certificate not found' });
     }
 
     await prisma.materialCertificate.delete({ where: { id: req.params.certId } });
 
-    return res.json({ message: 'Сертификат удалён' });
+    return res.json({ message: 'Certificate deleted' });
   } catch (error) {
     console.error('Delete certificate error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении сертификата' });
+    return res.status(500).json({ error: 'Error deleting certificate' });
   }
 });
 
@@ -310,7 +310,7 @@ router.get('/:id/incoming-controls', async (req: AuthRequest, res: Response) => 
   try {
     const material = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const controls = await prisma.incomingControl.findMany({
@@ -325,7 +325,7 @@ router.get('/:id/incoming-controls', async (req: AuthRequest, res: Response) => 
     return res.json({ data: controls });
   } catch (error) {
     console.error('List incoming controls error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении записей входного контроля' });
+    return res.status(500).json({ error: 'Error fetching incoming control records' });
   }
 });
 
@@ -334,7 +334,7 @@ router.post('/:id/incoming-controls', async (req: AuthRequest, res: Response) =>
   try {
     const material = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const {
@@ -343,13 +343,13 @@ router.post('/:id/incoming-controls', async (req: AuthRequest, res: Response) =>
     } = req.body;
 
     if (!result) {
-      return res.status(400).json({ error: 'Обязательное поле: result (ACCEPTED, REJECTED, CONDITIONALLY_ACCEPTED)' });
+      return res.status(400).json({ error: 'Required field: result (ACCEPTED, REJECTED, CONDITIONALLY_ACCEPTED)' });
     }
 
     const inspector = inspectorId || req.userId;
     const person = await prisma.person.findUnique({ where: { id: inspector } });
     if (!person || person.deletedAt) {
-      return res.status(404).json({ error: 'Инспектор не найден' });
+      return res.status(404).json({ error: 'Inspector not found' });
     }
 
     const control = await prisma.incomingControl.create({
@@ -370,7 +370,7 @@ router.post('/:id/incoming-controls', async (req: AuthRequest, res: Response) =>
     return res.status(201).json(control);
   } catch (error) {
     console.error('Create incoming control error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании записи входного контроля' });
+    return res.status(500).json({ error: 'Error creating incoming control record' });
   }
 });
 
@@ -379,7 +379,7 @@ router.put('/:materialId/incoming-controls/:controlId', async (req: AuthRequest,
   try {
     const control = await prisma.incomingControl.findUnique({ where: { id: req.params.controlId } });
     if (!control || control.materialId !== req.params.materialId) {
-      return res.status(404).json({ error: 'Запись входного контроля не найдена' });
+      return res.status(404).json({ error: 'Incoming control record not found' });
     }
 
     const {
@@ -403,7 +403,7 @@ router.put('/:materialId/incoming-controls/:controlId', async (req: AuthRequest,
     return res.json(updated);
   } catch (error) {
     console.error('Update incoming control error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении записи входного контроля' });
+    return res.status(500).json({ error: 'Error updating incoming control record' });
   }
 });
 
@@ -416,18 +416,18 @@ router.post('/:id/usages', async (req: AuthRequest, res: Response) => {
   try {
     const material = await prisma.material.findUnique({ where: { id: req.params.id } });
     if (!material || material.deletedAt) {
-      return res.status(404).json({ error: 'Материал не найден' });
+      return res.status(404).json({ error: 'Material not found' });
     }
 
     const { workItemId, quantity, unit, usedDate } = req.body;
 
     if (!workItemId) {
-      return res.status(400).json({ error: 'Обязательное поле: workItemId' });
+      return res.status(400).json({ error: 'Required field: workItemId' });
     }
 
     const workItem = await prisma.workItem.findUnique({ where: { id: workItemId } });
     if (!workItem || workItem.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     const usage = await prisma.materialUsage.create({
@@ -447,10 +447,10 @@ router.post('/:id/usages', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(usage);
   } catch (error: any) {
     if (error?.code === 'P2002') {
-      return res.status(409).json({ error: 'Связь материала с данной работой уже существует' });
+      return res.status(409).json({ error: 'Material is already linked to this work item' });
     }
     console.error('Create material usage error:', error);
-    return res.status(500).json({ error: 'Ошибка при привязке материала к работе' });
+    return res.status(500).json({ error: 'Error linking material to work item' });
   }
 });
 
@@ -459,15 +459,15 @@ router.delete('/:materialId/usages/:usageId', async (req: AuthRequest, res: Resp
   try {
     const usage = await prisma.materialUsage.findUnique({ where: { id: req.params.usageId } });
     if (!usage || usage.materialId !== req.params.materialId) {
-      return res.status(404).json({ error: 'Связь материала с работой не найдена' });
+      return res.status(404).json({ error: 'Material-work item link not found' });
     }
 
     await prisma.materialUsage.delete({ where: { id: req.params.usageId } });
 
-    return res.json({ message: 'Связь материала с работой удалена' });
+    return res.json({ message: 'Material-work item link deleted' });
   } catch (error) {
     console.error('Delete material usage error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении связи материала с работой' });
+    return res.status(500).json({ error: 'Error deleting material-work item link' });
   }
 });
 

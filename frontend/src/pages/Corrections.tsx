@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import { useI18n } from '../i18n';
 
 const { TextArea } = Input;
@@ -99,8 +99,8 @@ const Corrections: React.FC = () => {
       form.resetFields();
       fetchCorrections();
       fetchStats();
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -111,8 +111,8 @@ const Corrections: React.FC = () => {
       fetchCorrections();
       fetchStats();
       if (selectedCorrection?.id === id) fetchDetail(id);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
@@ -122,8 +122,8 @@ const Corrections: React.FC = () => {
       await apiClient.post(`/corrections/${selectedCorrection.id}/comments`, { text: commentText });
       setCommentText('');
       fetchDetail(selectedCorrection.id);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     }
   };
 
