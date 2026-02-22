@@ -36,7 +36,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(members);
   } catch (error) {
     console.error('Error fetching team:', error);
-    res.status(500).json({ error: 'Failed to fetch team' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch team: ${detail}` });
   }
 });
 
@@ -75,7 +76,8 @@ router.get('/available', async (req: Request, res: Response) => {
     res.json(availablePersons);
   } catch (error) {
     console.error('Error fetching available persons:', error);
-    res.status(500).json({ error: 'Failed to fetch available persons' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch available persons: ${detail}` });
   }
 });
 
@@ -113,11 +115,12 @@ router.post('/add-member', async (req: Request, res: Response) => {
 
     res.status(201).json(member);
   } catch (error: any) {
-    if (error.code === 'P2002') {
+    if ((error as any)?.code === 'P2002') {
       return res.status(409).json({ error: 'This person already has this role in the project' });
     }
     console.error('Error adding member:', error);
-    res.status(500).json({ error: 'Failed to add member' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to add member: ${detail}` });
   }
 });
 
@@ -137,51 +140,59 @@ router.post('/create-and-add', async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password || 'Temp1234!', 12);
 
-    const person = await prisma.person.create({
-      data: {
-        fio,
-        email,
-        position: position || null,
-        role: role || 'ENGINEER',
-        phone: phone || null,
-        passwordHash,
-        organizationId: organizationId || null,
-      },
-    });
+    const member = await prisma.$transaction(async (tx) => {
+      const person = await tx.person.create({
+        data: {
+          fio,
+          email,
+          position: position || null,
+          role: role || 'ENGINEER',
+          phone: phone || null,
+          passwordHash,
+          organizationId: organizationId || null,
+        },
+      });
 
-    const member = await prisma.projectMember.create({
-      data: {
-        projectId,
-        personId: person.id,
-        projectRole,
-        canSign: canSign || false,
-      },
-      include: {
-        person: {
-          select: {
-            id: true,
-            fio: true,
-            position: true,
-            role: true,
-            email: true,
-            organization: {
-              select: { id: true, name: true, shortName: true },
+      return tx.projectMember.create({
+        data: {
+          projectId,
+          personId: person.id,
+          projectRole,
+          canSign: canSign || false,
+        },
+        include: {
+          person: {
+            select: {
+              id: true,
+              fio: true,
+              position: true,
+              role: true,
+              email: true,
+              organization: {
+                select: { id: true, name: true, shortName: true },
+              },
             },
           },
         },
-      },
+      });
     });
 
     res.status(201).json(member);
   } catch (error) {
     console.error('Error creating and adding member:', error);
-    res.status(500).json({ error: 'Failed to create user and add to project' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create user and add to project: ${detail}` });
   }
 });
 
 // PUT /api/team/:memberId
 router.put('/:memberId', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.projectMember.findUnique({ where: { id: req.params.memberId } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Team member not found' });
+    }
+
     const { projectRole, canSign } = req.body;
 
     const member = await prisma.projectMember.update({
@@ -206,13 +217,19 @@ router.put('/:memberId', async (req: Request, res: Response) => {
     res.json(member);
   } catch (error) {
     console.error('Error updating member:', error);
-    res.status(500).json({ error: 'Failed to update member' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update member: ${detail}` });
   }
 });
 
 // DELETE /api/team/:memberId
 router.delete('/:memberId', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.projectMember.findUnique({ where: { id: req.params.memberId } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Team member not found' });
+    }
+
     await prisma.projectMember.delete({
       where: { id: req.params.memberId },
     });
@@ -220,7 +237,8 @@ router.delete('/:memberId', async (req: Request, res: Response) => {
     res.json({ message: 'Member removed from project' });
   } catch (error) {
     console.error('Error removing member:', error);
-    res.status(500).json({ error: 'Failed to remove member' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to remove member: ${detail}` });
   }
 });
 
