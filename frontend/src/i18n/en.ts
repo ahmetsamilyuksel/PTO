@@ -569,4 +569,28 @@ export const en: TranslationKeys = {
     createdBy: 'Created By',
     usedIn: 'Used In Documents',
   },
+
+  // ─── System Messages ───
+  messages: {
+    accessDenied: 'Access denied',
+    notFound: 'Record not found',
+    alreadyExists: 'This record already exists',
+    serverError: 'Server error',
+    fileUploaded: 'File uploaded',
+    fileDeleted: 'File deleted',
+    fileUploadFailed: 'File upload failed',
+    fileDeleteFailed: 'File deletion failed',
+    loginFailed: 'Login failed. Check your credentials.',
+    welcome: 'Welcome, {name}!',
+    projectCreated: 'Project created successfully!',
+    projectCreateFailed: 'Error creating project',
+    enterEmail: 'Please enter email',
+    invalidEmail: 'Invalid email',
+    enterPassword: 'Please enter password',
+    enterName: 'Please enter name',
+    enterCode: 'Please enter code',
+    selectType: 'Please select type',
+    selectRole: 'Please select role',
+    selectAtLeastOne: 'Please select at least one option',
+  },
 };

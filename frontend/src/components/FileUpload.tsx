@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 import apiClient, { getApiError } from '../api/client';
+import { useI18n } from '../i18n';
 import type { AttachmentType } from '../types';
 
 const { Dragger } = Upload;
@@ -47,6 +48,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   maxCount,
   accept,
 }) => {
+  const { t } = useI18n();
   const [attachmentType, setAttachmentType] = useState<AttachmentType>('DOCUMENT');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -79,11 +81,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
         });
 
         onSuccess?.(response.data);
-        message.success('Файл загружен');
+        message.success(t.messages.fileUploaded);
         if (onUploaded) onUploaded();
       } catch (error) {
         onError?.(error as Error);
-        message.error(getApiError(error, 'Ошибка загрузки файла'));
+        message.error(getApiError(error, t.messages.fileUploadFailed));
       }
     },
     onChange: (info) => {
@@ -102,10 +104,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
       if (file.response?.id) {
         try {
           await apiClient.delete(`/attachments/${file.response.id}`);
-          message.success('Файл удалён');
+          message.success(t.messages.fileDeleted);
           if (onUploaded) onUploaded();
         } catch (error) {
-          message.error(getApiError(error, 'Ошибка удаления файла'));
+          message.error(getApiError(error, t.messages.fileDeleteFailed));
           return false;
         }
       }

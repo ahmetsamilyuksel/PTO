@@ -32,6 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import type { DataNode } from 'antd/es/tree';
 import dayjs from 'dayjs';
 import apiClient, { getApiError } from '../api/client';
+import { useI18n } from '../i18n';
 import type { Organization, Person, ProjectType, OrgRole, PersonRole } from '../types';
 
 const { Title, Text } = Typography;
@@ -132,6 +133,7 @@ const ProjectSetup: React.FC = () => {
   const [orgForm] = Form.useForm();
   const [personForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   // Data state
@@ -349,10 +351,10 @@ const ProjectSetup: React.FC = () => {
       };
 
       const response = await apiClient.post('/projects', payload);
-      message.success('Проект успешно создан!');
+      message.success(t.messages.projectCreated);
       navigate(`/projects/${response.data.id}`);
     } catch (error: unknown) {
-      const msg = getApiError(error, 'Ошибка при создании проекта');
+      const msg = getApiError(error, t.messages.projectCreateFailed);
       if (msg) message.error(msg);
     } finally {
       setLoading(false);
@@ -392,8 +394,8 @@ const ProjectSetup: React.FC = () => {
               <Col span={16}>
                 <Form.Item
                   name="name"
-                  label="Название проекта"
-                  rules={[{ required: true, message: 'Введите название' }]}
+                  label={t.project.name}
+                  rules={[{ required: true, message: t.messages.enterName }]}
                 >
                   <Input placeholder="ЖК Солнечный, корпус 3" />
                 </Form.Item>
@@ -401,8 +403,8 @@ const ProjectSetup: React.FC = () => {
               <Col span={8}>
                 <Form.Item
                   name="code"
-                  label="Код проекта"
-                  rules={[{ required: true, message: 'Введите код' }]}
+                  label={t.project.code}
+                  rules={[{ required: true, message: t.messages.enterCode }]}
                 >
                   <Input placeholder="SOL-03" />
                 </Form.Item>
@@ -415,8 +417,8 @@ const ProjectSetup: React.FC = () => {
               <Col span={8}>
                 <Form.Item
                   name="type"
-                  label="Тип проекта"
-                  rules={[{ required: true, message: 'Выберите тип' }]}
+                  label={t.project.type}
+                  rules={[{ required: true, message: t.messages.selectType }]}
                 >
                   <Select options={PROJECT_TYPES} placeholder="Выберите тип" />
                 </Form.Item>
@@ -518,10 +520,10 @@ const ProjectSetup: React.FC = () => {
               <Form form={orgForm} layout="vertical">
                 <Form.Item
                   name="role"
-                  label="Роль в проекте"
-                  rules={[{ required: true, message: 'Выберите роль' }]}
+                  label={t.person.role}
+                  rules={[{ required: true, message: t.messages.selectRole }]}
                 >
-                  <Select options={ORG_ROLES} placeholder="Выберите роль" />
+                  <Select options={ORG_ROLES} placeholder={t.messages.selectRole} />
                 </Form.Item>
                 <Form.Item name="organizationId" label="Существующая организация">
                   <Select
@@ -636,10 +638,10 @@ const ProjectSetup: React.FC = () => {
               <Form form={personForm} layout="vertical">
                 <Form.Item
                   name="role"
-                  label="Роль в проекте"
-                  rules={[{ required: true, message: 'Выберите роль' }]}
+                  label={t.person.role}
+                  rules={[{ required: true, message: t.messages.selectRole }]}
                 >
-                  <Select options={PERSON_ROLES} placeholder="Выберите роль" />
+                  <Select options={PERSON_ROLES} placeholder={t.messages.selectRole} />
                 </Form.Item>
                 <Form.Item name="personId" label="Существующий специалист">
                   <Select
@@ -771,8 +773,8 @@ const ProjectSetup: React.FC = () => {
               <Form form={locationForm} layout="vertical">
                 <Form.Item
                   name="name"
-                  label="Название"
-                  rules={[{ required: true, message: 'Введите название' }]}
+                  label={t.app.name}
+                  rules={[{ required: true, message: t.messages.enterName }]}
                 >
                   <Input placeholder="Корпус 1 / Секция А / Этаж 1 / Кв. 101" />
                 </Form.Item>
@@ -853,8 +855,8 @@ const ProjectSetup: React.FC = () => {
                   <Col span={16}>
                     <Form.Item
                       name="name"
-                      label="Наименование"
-                      rules={[{ required: true, message: 'Введите наименование' }]}
+                      label={t.app.name}
+                      rules={[{ required: true, message: t.messages.enterName }]}
                     >
                       <Input placeholder="Бетонирование фундаментной плиты" />
                     </Form.Item>

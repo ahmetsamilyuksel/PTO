@@ -408,7 +408,7 @@ const Tasks: React.FC = () => {
           <Form.Item
             name="assigneeIds"
             label={t.tasks?.assignees || 'Sorumlular'}
-            rules={[{ required: true, message: 'En az bir kişi seçiniz' }]}
+            rules={[{ required: true, message: t.messages.selectAtLeastOne }]}
           >
             <Select mode="multiple" placeholder={t.tasks?.selectAssignees || 'Sorumlu seçin'}
               optionFilterProp="label"
