@@ -534,6 +534,26 @@ export interface MatrixCell {
   documentNumber?: string;
 }
 
+export interface MatrixRule {
+  id: string;
+  projectId?: string;
+  workType: string;
+  documentType: string;
+  triggerEvent: string;
+  preparedByRole: string;
+  checkedByRole?: string;
+  signedByRoles: string[];
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface MatrixData {
+  rules: MatrixRule[];
+  locations: Location[];
+  documentTypes: string[];
+  cells: MatrixCell[];
+}
+
 export interface AttentionItem {
   type: 'pending_signature' | 'missing_cert' | 'upcoming_test' | 'overdue';
   title: string;

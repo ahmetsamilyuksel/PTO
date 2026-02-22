@@ -10,7 +10,7 @@ router.get('/summary', async (req: AuthRequest, res: Response) => {
     const { projectId } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const project = await prisma.project.findUnique({
@@ -19,7 +19,7 @@ router.get('/summary', async (req: AuthRequest, res: Response) => {
     });
 
     if (!project) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     // Run all aggregation queries in parallel
@@ -156,7 +156,7 @@ router.get('/summary', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard summary error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении сводки по проекту' });
+    return res.status(500).json({ error: 'Error fetching project summary' });
   }
 });
 
@@ -258,7 +258,7 @@ router.get('/my-tasks', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('My tasks error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении моих задач' });
+    return res.status(500).json({ error: 'Error fetching my tasks' });
   }
 });
 
@@ -268,7 +268,7 @@ router.get('/document-stats', async (req: AuthRequest, res: Response) => {
     const { projectId } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     // Documents by type
@@ -327,7 +327,7 @@ router.get('/document-stats', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Document stats error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении статистики документов' });
+    return res.status(500).json({ error: 'Error fetching document statistics' });
   }
 });
 
@@ -418,7 +418,7 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard overview error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении общей сводки' });
+    return res.status(500).json({ error: 'Error fetching overall summary' });
   }
 });
 

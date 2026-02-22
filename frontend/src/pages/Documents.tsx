@@ -127,8 +127,9 @@ const Documents: React.FC = () => {
       const data = response.data;
       setDocuments(data.data || data || []);
       setTotal(data.total || 0);
-    } catch {
-      message.error(t.app.error);
+    } catch (error: unknown) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -179,8 +180,9 @@ const Documents: React.FC = () => {
     try {
       const response = await apiClient.get(`/documents/${docId}`);
       setSelectedDocument(response.data);
-    } catch {
-      message.error(t.app.error);
+    } catch (error: unknown) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setDetailLoading(false);
     }

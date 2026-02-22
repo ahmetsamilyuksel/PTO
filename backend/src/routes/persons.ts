@@ -53,7 +53,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: persons, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List persons error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка сотрудников' });
+    return res.status(500).json({ error: 'Error fetching persons list' });
   }
 });
 
@@ -85,13 +85,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!person) {
-      return res.status(404).json({ error: 'Сотрудник не найден' });
+      return res.status(404).json({ error: 'Person not found' });
     }
 
     return res.json(person);
   } catch (error) {
     console.error('Get person error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении сотрудника' });
+    return res.status(500).json({ error: 'Error fetching person' });
   }
 });
 
@@ -104,22 +104,22 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     } = req.body;
 
     if (!fio || !email || !password) {
-      return res.status(400).json({ error: 'Обязательные поля: fio, email, password' });
+      return res.status(400).json({ error: 'Required fields: fio, email, password' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ error: 'Пароль должен содержать минимум 6 символов' });
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const existing = await prisma.person.findUnique({ where: { email } });
     if (existing) {
-      return res.status(409).json({ error: 'Сотрудник с таким email уже существует' });
+      return res.status(409).json({ error: 'A person with this email already exists' });
     }
 
     if (organizationId) {
       const org = await prisma.organization.findUnique({ where: { id: organizationId } });
       if (!org) {
-        return res.status(404).json({ error: 'Организация не найдена' });
+        return res.status(404).json({ error: 'Organization not found' });
       }
     }
 
@@ -156,7 +156,7 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     return res.status(201).json(person);
   } catch (error) {
     console.error('Create person error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании сотрудника' });
+    return res.status(500).json({ error: 'Error creating person' });
   }
 });
 
@@ -165,12 +165,12 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.person.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Сотрудник не найден' });
+      return res.status(404).json({ error: 'Person not found' });
     }
 
     // Only admin or the person themselves can edit
     if (req.userRole !== 'ADMIN' && req.userId !== req.params.id) {
-      return res.status(403).json({ error: 'Недостаточно прав для редактирования' });
+      return res.status(403).json({ error: 'Insufficient permissions to edit' });
     }
 
     const {
@@ -180,13 +180,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 
     // Only admin can change role
     if (role !== undefined && req.userRole !== 'ADMIN') {
-      return res.status(403).json({ error: 'Только администратор может менять роль' });
+      return res.status(403).json({ error: 'Only administrators can change roles' });
     }
 
     if (organizationId) {
       const org = await prisma.organization.findUnique({ where: { id: organizationId } });
       if (!org) {
-        return res.status(404).json({ error: 'Организация не найдена' });
+        return res.status(404).json({ error: 'Organization not found' });
       }
     }
 
@@ -220,7 +220,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(person);
   } catch (error) {
     console.error('Update person error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении сотрудника' });
+    return res.status(500).json({ error: 'Error updating person' });
   }
 });
 
@@ -229,11 +229,11 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
   try {
     const existing = await prisma.person.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Сотрудник не найден' });
+      return res.status(404).json({ error: 'Person not found' });
     }
 
     if (existing.id === req.userId) {
-      return res.status(400).json({ error: 'Нельзя удалить собственную учётную запись' });
+      return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
     await prisma.person.update({
@@ -241,10 +241,10 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Сотрудник удалён' });
+    return res.json({ message: 'Person deleted' });
   } catch (error) {
     console.error('Delete person error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении сотрудника' });
+    return res.status(500).json({ error: 'Error deleting person' });
   }
 });
 

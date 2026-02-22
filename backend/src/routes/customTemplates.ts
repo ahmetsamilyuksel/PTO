@@ -19,7 +19,7 @@ const upload = multer({
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error(`Недопустимый тип файла: ${file.mimetype}. Разрешены: DOCX, XLSX, PDF`));
+      cb(new Error(`Invalid file type: ${file.mimetype}. Allowed: DOCX, XLSX, PDF`));
     }
   },
 });
@@ -143,7 +143,7 @@ router.post('/', upload.single('file'), async (req: Request, res: Response) => {
 
     res.status(201).json(template);
   } catch (error: any) {
-    if (error.message?.includes('Недопустимый тип файла')) {
+    if (error.message?.includes('Invalid file type')) {
       return res.status(400).json({ error: error.message });
     }
     console.error('Error creating template:', error);

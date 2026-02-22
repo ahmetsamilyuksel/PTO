@@ -27,11 +27,11 @@ export async function generateDocument(
   });
 
   if (!template) {
-    throw new Error(`Шаблон документа с ID "${templateId}" не найден`);
+    throw new Error(`Document template with ID "${templateId}" not found`);
   }
 
   if (!template.filePath) {
-    throw new Error(`У шаблона "${template.name}" отсутствует путь к файлу`);
+    throw new Error(`Template "${template.name}" has no file path`);
   }
 
   // 2. Загружаем файл шаблона из MinIO
@@ -40,7 +40,7 @@ export async function generateDocument(
     templateBuffer = await downloadFile(template.filePath);
   } catch (err) {
     throw new Error(
-      `Не удалось загрузить файл шаблона "${template.filePath}": ${
+      `Failed to download template file "${template.filePath}": ${
         err instanceof Error ? err.message : String(err)
       }`
     );
@@ -67,10 +67,10 @@ export async function generateDocument(
       const errorMessages = (error.properties.errors as Array<{ message: string }>)
         .map((e) => e.message)
         .join('; ');
-      throw new Error(`Ошибка рендеринга шаблона: ${errorMessages}`);
+      throw new Error(`Template rendering error: ${errorMessages}`);
     }
     throw new Error(
-      `Ошибка рендеринга шаблона: ${error.message ?? String(err)}`
+      `Template rendering error: ${error.message ?? String(err)}`
     );
   }
 
@@ -131,7 +131,7 @@ export async function convertToPdf(docxBuffer: Buffer): Promise<Buffer> {
   // return await convertAsync(docxBuffer, '.pdf', undefined);
 
   console.warn(
-    '[documentGenerator] convertToPdf: LibreOffice не настроен, возвращается DOCX-буфер'
+    '[documentGenerator] convertToPdf: LibreOffice not configured, returning DOCX buffer'
   );
   return docxBuffer;
 }

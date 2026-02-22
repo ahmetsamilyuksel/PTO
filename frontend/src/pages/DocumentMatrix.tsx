@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table, Tag, Select, Space, Typography, Spin, Card, Tooltip, Badge,
-  Row, Col, Button, message,
+  Row, Col, Button, message, Empty,
 } from 'antd';
 import { FileAddOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
-import apiClient from '../api/client';
-import type { MatrixData, MatrixCell, Location, DocumentStatus } from '../types';
+import apiClient, { getApiError } from '../api/client';
+import type { MatrixData, MatrixCell, MatrixRule, Location, Document } from '../types';
 import { useI18n } from '../i18n';
 
 const { Title } = Typography;
@@ -42,13 +42,62 @@ const DocumentMatrix: React.FC = () => {
     if (!projectId) return;
     setLoading(true);
     try {
-      const params: Record<string, string> = { projectId };
-      if (filterWorkType) params.workType = filterWorkType;
-      if (filterStatus) params.status = filterStatus;
-      const response = await apiClient.get('/matrix', { params });
-      setMatrixData(response.data);
-    } catch {
-      message.error(t.app.error);
+      // Fetch rules, locations, and documents in parallel
+      const [rulesRes, locsRes, docsRes] = await Promise.all([
+        apiClient.get('/matrix', { params: { projectId } }),
+        apiClient.get('/locations', { params: { projectId } }).catch(() => ({ data: [] })),
+        apiClient.get('/documents', { params: { projectId, limit: '10000' } }).catch(() => ({ data: { data: [] } })),
+      ]);
+
+      const rules: MatrixRule[] = rulesRes.data?.data || rulesRes.data || [];
+      const rawLocations: Location[] = locsRes.data?.data || locsRes.data || [];
+      const documents: Document[] = docsRes.data?.data || docsRes.data || [];
+
+      // Filter rules by workType if filter is active
+      const filteredRules = filterWorkType
+        ? rules.filter((r) => r.workType === filterWorkType)
+        : rules;
+
+      // Extract unique document types from rules
+      const documentTypes = [...new Set(filteredRules.map((r) => r.documentType))];
+
+      // Flatten locations for the matrix
+      const flatLocs = flattenLocations(rawLocations);
+
+      // Compute cells: for each documentType+location pair, find matching documents
+      const cells: MatrixCell[] = [];
+      for (const dt of documentTypes) {
+        for (const loc of flatLocs) {
+          const doc = documents.find(
+            (d) => d.documentType === dt && d.locationId === loc.id
+          );
+          if (doc) {
+            cells.push({
+              locationId: loc.id,
+              documentType: dt as MatrixCell['documentType'],
+              status: doc.status,
+              documentId: doc.id,
+              documentNumber: doc.documentNumber || doc.number,
+            });
+          }
+          // If no doc found, the cell is MISSING (handled in render)
+        }
+      }
+
+      // Filter cells by status if filter is active
+      const filteredCells = filterStatus
+        ? cells.filter((c) => c.status === filterStatus)
+        : cells;
+
+      setMatrixData({
+        rules: filteredRules,
+        locations: rawLocations,
+        documentTypes,
+        cells: filterStatus ? filteredCells : cells,
+      });
+    } catch (error: unknown) {
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -58,7 +107,12 @@ const DocumentMatrix: React.FC = () => {
 
   const flattenLocations = (locs: Location[]): Location[] => {
     const result: Location[] = [];
-    const flatten = (items: Location[]) => { items.forEach((item) => { result.push(item); if (item.children) flatten(item.children); }); };
+    const flatten = (items: Location[]) => {
+      items.forEach((item) => {
+        result.push(item);
+        if (item.children) flatten(item.children);
+      });
+    };
     flatten(locs);
     return result;
   };
@@ -79,6 +133,9 @@ const DocumentMatrix: React.FC = () => {
   const buildColumns = (): ColumnsType<MatrixRow> => {
     if (!matrixData) return [];
     const flatLocs = flattenLocations(matrixData.locations);
+    if (flatLocs.length === 0) return [
+      { title: t.matrix?.documentType || 'Doküman Türü', dataIndex: 'documentType', key: 'documentType', width: 250, render: (text: string) => <strong>{text}</strong> },
+    ];
     const columns: ColumnsType<MatrixRow> = [
       { title: t.matrix?.documentType || 'Doküman Türü', dataIndex: 'documentType', key: 'documentType', fixed: 'left', width: 250, render: (text: string) => <strong>{text}</strong> },
     ];
@@ -113,12 +170,12 @@ const DocumentMatrix: React.FC = () => {
   return (
     <div>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Col><Title level={3} style={{ margin: 0 }}>{t.matrix?.title}</Title></Col>
+        <Col><Title level={3} style={{ margin: 0 }}>{t.matrix?.title || 'Evrak Matrisi'}</Title></Col>
         <Col>
           <Space>
-            <Select value={filterWorkType} onChange={setFilterWorkType} allowClear placeholder={t.matrix?.workType} style={{ width: 200 }} options={workTypes.map((wt) => ({ value: wt, label: wt }))} />
+            <Select value={filterWorkType} onChange={setFilterWorkType} allowClear placeholder={t.matrix?.workType || 'İş Türü'} style={{ width: 200 }} options={workTypes.map((wt) => ({ value: wt, label: wt }))} />
             <Select value={filterStatus} onChange={setFilterStatus} allowClear placeholder={t.app.status} style={{ width: 160 }} options={Object.entries(statusConfig).map(([value, cfg]) => ({ value, label: cfg.label }))} />
-            <Button icon={<ReloadOutlined />} onClick={fetchMatrix}>{t.app.reset}</Button>
+            <Button icon={<ReloadOutlined />} onClick={fetchMatrix}>{t.app.reset || 'Yenile'}</Button>
           </Space>
         </Col>
       </Row>
@@ -126,7 +183,11 @@ const DocumentMatrix: React.FC = () => {
         <Space wrap>{Object.entries(statusConfig).map(([key, cfg]) => <Tag key={key} color={cfg.color}>{cfg.label}</Tag>)}</Space>
       </Card>
       <Spin spinning={loading}>
-        <Table columns={buildColumns()} dataSource={buildDataSource()} pagination={false} scroll={{ x: 'max-content' }} bordered size="small" />
+        {matrixData && matrixData.documentTypes.length === 0 ? (
+          <Empty description={t.matrix?.noRules || 'Bu proje için matris kuralı tanımlanmamış'} />
+        ) : (
+          <Table columns={buildColumns()} dataSource={buildDataSource()} pagination={false} scroll={{ x: 'max-content' }} bordered size="small" />
+        )}
       </Spin>
     </div>
   );

@@ -51,7 +51,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: projects, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List projects error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка проектов' });
+    return res.status(500).json({ error: 'Error fetching projects list' });
   }
 });
 
@@ -86,13 +86,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     return res.json(project);
   } catch (error) {
     console.error('Get project error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении проекта' });
+    return res.status(500).json({ error: 'Error fetching project' });
   }
 });
 
@@ -107,12 +107,12 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     } = req.body;
 
     if (!name || !code) {
-      return res.status(400).json({ error: 'Обязательные поля: name, code' });
+      return res.status(400).json({ error: 'Required fields: name, code' });
     }
 
     const existingCode = await prisma.project.findUnique({ where: { code } });
     if (existingCode) {
-      return res.status(409).json({ error: 'Проект с таким кодом уже существует' });
+      return res.status(409).json({ error: 'A project with this code already exists' });
     }
 
     const project = await prisma.project.create({
@@ -149,7 +149,7 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     return res.status(201).json(project);
   } catch (error) {
     console.error('Create project error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании проекта' });
+    return res.status(500).json({ error: 'Error creating project' });
   }
 });
 
@@ -171,12 +171,12 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
     } = req.body;
 
     if (!name || !code) {
-      return res.status(400).json({ error: 'Обязательные поля: name, code' });
+      return res.status(400).json({ error: 'Required fields: name, code' });
     }
 
     const existingCode = await prisma.project.findUnique({ where: { code } });
     if (existingCode) {
-      return res.status(409).json({ error: 'Проект с таким кодом уже существует' });
+      return res.status(409).json({ error: 'A project with this code already exists' });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -246,15 +246,15 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
       // Step 5: Create journals
       if (Array.isArray(journalTypes) && journalTypes.length > 0) {
         const journalTitles: Record<string, string> = {
-          GENERAL: 'Общий журнал работ',
-          CONCRETE: 'Журнал бетонных работ',
-          WELDING: 'Журнал сварочных работ',
-          ANTICORROSION: 'Журнал антикоррозионных работ',
-          INSULATION: 'Журнал изоляционных работ',
-          PILE_DRIVING: 'Журнал забивки свай',
-          GEODETIC: 'Журнал геодезических работ',
-          INSTALLATION: 'Журнал монтажных работ',
-          OTHER: 'Прочий журнал',
+          GENERAL: 'General Work Journal',
+          CONCRETE: 'Concrete Works Journal',
+          WELDING: 'Welding Works Journal',
+          ANTICORROSION: 'Anticorrosion Works Journal',
+          INSULATION: 'Insulation Works Journal',
+          PILE_DRIVING: 'Pile Driving Journal',
+          GEODETIC: 'Geodetic Works Journal',
+          INSTALLATION: 'Installation Works Journal',
+          OTHER: 'Other Journal',
         };
 
         for (const jt of journalTypes) {
@@ -262,7 +262,7 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
             data: {
               projectId: project.id,
               journalType: jt,
-              title: journalTitles[jt] || `Журнал (${jt})`,
+              title: journalTitles[jt] || `Journal (${jt})`,
               startDate: startDate ? new Date(startDate) : new Date(),
               status: 'ACTIVE',
             },
@@ -287,7 +287,7 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
     return res.status(201).json(full);
   } catch (error) {
     console.error('Setup wizard error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании проекта через мастер настройки' });
+    return res.status(500).json({ error: 'Error creating project via setup wizard' });
   }
 });
 
@@ -302,7 +302,7 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     });
 
     if (!project) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const [
@@ -367,8 +367,8 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     pendingSignatures.forEach((sig) => {
       attentionItems.push({
         type: 'pending_signature',
-        title: `Подпись: ${sig.document.documentNumber || sig.document.title}`,
-        description: `Ожидает подписи: ${sig.person.fio}`,
+        title: `Signature: ${sig.document.documentNumber || sig.document.title}`,
+        description: `Pending signature: ${sig.person.fio}`,
         priority: 'medium',
       });
     });
@@ -376,8 +376,8 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     if (materialsWithoutCerts > 0) {
       attentionItems.push({
         type: 'missing_cert',
-        title: `Материалы без сертификатов: ${materialsWithoutCerts}`,
-        description: 'Необходимо добавить сертификаты для входного контроля',
+        title: `Materials without certificates: ${materialsWithoutCerts}`,
+        description: 'Certificates need to be added for incoming control',
         priority: 'high',
       });
     }
@@ -385,8 +385,8 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     overdueTasks.forEach((task) => {
       attentionItems.push({
         type: 'overdue',
-        title: `Просрочена: ${task.title}`,
-        description: 'Срок истёк',
+        title: `Overdue: ${task.title}`,
+        description: 'Deadline expired',
         priority: task.priority === 'URGENT' ? 'high' : task.priority === 'HIGH' ? 'high' : 'medium',
         dueDate: task.dueDate,
       });
@@ -409,7 +409,7 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Project dashboard error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении данных дашборда' });
+    return res.status(500).json({ error: 'Error fetching dashboard data' });
   }
 });
 
@@ -418,7 +418,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.project.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const {
@@ -452,7 +452,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(project);
   } catch (error) {
     console.error('Update project error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении проекта' });
+    return res.status(500).json({ error: 'Error updating project' });
   }
 });
 
@@ -461,7 +461,7 @@ router.delete('/:id', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthR
   try {
     const existing = await prisma.project.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     await prisma.project.update({
@@ -469,10 +469,10 @@ router.delete('/:id', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthR
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Проект удалён' });
+    return res.json({ message: 'Project deleted' });
   } catch (error) {
     console.error('Delete project error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении проекта' });
+    return res.status(500).json({ error: 'Error deleting project' });
   }
 });
 
@@ -482,17 +482,17 @@ router.post('/:id/members', async (req: AuthRequest, res: Response) => {
     const { personId, projectRole, canSign } = req.body;
 
     if (!personId || !projectRole) {
-      return res.status(400).json({ error: 'Обязательные поля: personId, projectRole' });
+      return res.status(400).json({ error: 'Required fields: personId, projectRole' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: req.params.id } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     const person = await prisma.person.findUnique({ where: { id: personId } });
     if (!person || person.deletedAt) {
-      return res.status(404).json({ error: 'Сотрудник не найден' });
+      return res.status(404).json({ error: 'Person not found' });
     }
 
     const member = await prisma.projectMember.create({
@@ -510,10 +510,10 @@ router.post('/:id/members', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(member);
   } catch (error: any) {
     if (error?.code === 'P2002') {
-      return res.status(409).json({ error: 'Участник с такой ролью уже добавлен в проект' });
+      return res.status(409).json({ error: 'Member with this role already added to project' });
     }
     console.error('Add member error:', error);
-    return res.status(500).json({ error: 'Ошибка при добавлении участника' });
+    return res.status(500).json({ error: 'Error adding member' });
   }
 });
 
@@ -522,15 +522,15 @@ router.delete('/:id/members/:memberId', async (req: AuthRequest, res: Response) 
   try {
     const member = await prisma.projectMember.findUnique({ where: { id: req.params.memberId } });
     if (!member || member.projectId !== req.params.id) {
-      return res.status(404).json({ error: 'Участник проекта не найден' });
+      return res.status(404).json({ error: 'Project member not found' });
     }
 
     await prisma.projectMember.delete({ where: { id: req.params.memberId } });
 
-    return res.json({ message: 'Участник удалён из проекта' });
+    return res.json({ message: 'Member removed from project' });
   } catch (error) {
     console.error('Remove member error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении участника' });
+    return res.status(500).json({ error: 'Error removing member' });
   }
 });
 

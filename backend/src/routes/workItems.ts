@@ -13,7 +13,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     } = req.query;
 
     if (!projectId) {
-      return res.status(400).json({ error: 'Обязательный параметр: projectId' });
+      return res.status(400).json({ error: 'Required parameter: projectId' });
     }
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -55,7 +55,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: workItems, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List work items error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении списка работ' });
+    return res.status(500).json({ error: 'Error fetching work items list' });
   }
 });
 
@@ -86,13 +86,13 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!workItem || workItem.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     return res.json(workItem);
   } catch (error) {
     console.error('Get work item error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении работы' });
+    return res.status(500).json({ error: 'Error fetching work item' });
   }
 });
 
@@ -105,25 +105,25 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!projectId || !code || !name || !workType) {
-      return res.status(400).json({ error: 'Обязательные поля: projectId, code, name, workType' });
+      return res.status(400).json({ error: 'Required fields: projectId, code, name, workType' });
     }
 
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project || project.deletedAt) {
-      return res.status(404).json({ error: 'Проект не найден' });
+      return res.status(404).json({ error: 'Project not found' });
     }
 
     if (locationId) {
       const location = await prisma.location.findUnique({ where: { id: locationId } });
       if (!location || location.deletedAt || location.projectId !== projectId) {
-        return res.status(404).json({ error: 'Локация не найдена' });
+        return res.status(404).json({ error: 'Location not found' });
       }
     }
 
     if (parentId) {
       const parent = await prisma.workItem.findUnique({ where: { id: parentId } });
       if (!parent || parent.deletedAt || parent.projectId !== projectId) {
-        return res.status(404).json({ error: 'Родительская работа не найдена' });
+        return res.status(404).json({ error: 'Parent work item not found' });
       }
     }
 
@@ -148,7 +148,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(workItem);
   } catch (error) {
     console.error('Create work item error:', error);
-    return res.status(500).json({ error: 'Ошибка при создании работы' });
+    return res.status(500).json({ error: 'Error creating work item' });
   }
 });
 
@@ -157,7 +157,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const existing = await prisma.workItem.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     const {
@@ -166,7 +166,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (parentId === req.params.id) {
-      return res.status(400).json({ error: 'Работа не может быть родителем самой себя' });
+      return res.status(400).json({ error: 'Work item cannot be its own parent' });
     }
 
     const workItem = await prisma.workItem.update({
@@ -191,7 +191,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(workItem);
   } catch (error) {
     console.error('Update work item error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении работы' });
+    return res.status(500).json({ error: 'Error updating work item' });
   }
 });
 
@@ -200,12 +200,12 @@ router.put('/:id/status', async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;
     if (!status) {
-      return res.status(400).json({ error: 'Обязательное поле: status' });
+      return res.status(400).json({ error: 'Required field: status' });
     }
 
     const existing = await prisma.workItem.findUnique({ where: { id: req.params.id } });
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     const validTransitions: Record<string, string[]> = {
@@ -217,7 +217,7 @@ router.put('/:id/status', async (req: AuthRequest, res: Response) => {
 
     if (!validTransitions[existing.status]?.includes(status)) {
       return res.status(400).json({
-        error: `Невозможно перейти из статуса "${existing.status}" в "${status}"`,
+        error: `Cannot transition from status "${existing.status}" to "${status}"`,
       });
     }
 
@@ -229,7 +229,7 @@ router.put('/:id/status', async (req: AuthRequest, res: Response) => {
     return res.json(workItem);
   } catch (error) {
     console.error('Update work item status error:', error);
-    return res.status(500).json({ error: 'Ошибка при обновлении статуса работы' });
+    return res.status(500).json({ error: 'Error updating work item status' });
   }
 });
 
@@ -242,15 +242,15 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     });
 
     if (!existing || existing.deletedAt) {
-      return res.status(404).json({ error: 'Работа не найдена' });
+      return res.status(404).json({ error: 'Work item not found' });
     }
 
     if (existing._count.children > 0) {
-      return res.status(400).json({ error: 'Нельзя удалить работу с дочерними элементами' });
+      return res.status(400).json({ error: 'Cannot delete a work item with child elements' });
     }
 
     if (existing._count.documents > 0) {
-      return res.status(400).json({ error: 'Нельзя удалить работу с привязанными документами' });
+      return res.status(400).json({ error: 'Cannot delete a work item with linked documents' });
     }
 
     await prisma.workItem.update({
@@ -258,10 +258,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
-    return res.json({ message: 'Работа удалена' });
+    return res.json({ message: 'Work item deleted' });
   } catch (error) {
     console.error('Delete work item error:', error);
-    return res.status(500).json({ error: 'Ошибка при удалении работы' });
+    return res.status(500).json({ error: 'Error deleting work item' });
   }
 });
 

@@ -21,7 +21,7 @@ router.get('/transitions', async (req: AuthRequest, res: Response) => {
     const { documentId, page = '1', limit = '50' } = req.query;
 
     if (!documentId) {
-      return res.status(400).json({ error: 'Обязательный параметр: documentId' });
+      return res.status(400).json({ error: 'Required parameter: documentId' });
     }
 
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -44,7 +44,7 @@ router.get('/transitions', async (req: AuthRequest, res: Response) => {
     return res.json({ data: transitions, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List transitions error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении истории переходов' });
+    return res.status(500).json({ error: 'Error fetching workflow history' });
   }
 });
 
@@ -57,7 +57,7 @@ router.get('/available-transitions/:documentId', async (req: AuthRequest, res: R
     });
 
     if (!document) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     const available = VALID_TRANSITIONS[document.status] || [];
@@ -70,7 +70,7 @@ router.get('/available-transitions/:documentId', async (req: AuthRequest, res: R
     });
   } catch (error) {
     console.error('Get available transitions error:', error);
-    return res.status(500).json({ error: 'Ошибка при получении доступных переходов' });
+    return res.status(500).json({ error: 'Error fetching available transitions' });
   }
 });
 
@@ -80,7 +80,7 @@ router.post('/transition', async (req: AuthRequest, res: Response) => {
     const { documentId, toStatus, comment, changedFields } = req.body;
 
     if (!documentId || !toStatus) {
-      return res.status(400).json({ error: 'Обязательные поля: documentId, toStatus' });
+      return res.status(400).json({ error: 'Required fields: documentId, toStatus' });
     }
 
     const document = await prisma.document.findUnique({
@@ -91,17 +91,17 @@ router.post('/transition', async (req: AuthRequest, res: Response) => {
     });
 
     if (!document || document.deletedAt) {
-      return res.status(404).json({ error: 'Документ не найден' });
+      return res.status(404).json({ error: 'Document not found' });
     }
 
     if (document.lockedAt && toStatus !== 'ARCHIVED' && toStatus !== 'IN_PACKAGE') {
-      return res.status(400).json({ error: 'Документ заблокирован после подписания' });
+      return res.status(400).json({ error: 'Document is locked after signing' });
     }
 
     const validNext = VALID_TRANSITIONS[document.status] || [];
     if (!validNext.includes(toStatus)) {
       return res.status(400).json({
-        error: `Невозможно перейти из статуса "${document.status}" в "${toStatus}". Допустимые переходы: ${validNext.join(', ') || 'нет'}`,
+        error: `Cannot transition from status "${document.status}" to "${toStatus}". Valid transitions: ${validNext.join(', ') || 'none'}`,
       });
     }
 
@@ -109,12 +109,12 @@ router.post('/transition', async (req: AuthRequest, res: Response) => {
     if (toStatus === 'PENDING_SIGNATURE') {
       const sigCount = await prisma.documentSignature.count({ where: { documentId } });
       if (sigCount === 0) {
-        return res.status(400).json({ error: 'Для отправки на подпись необходимо добавить подписантов' });
+        return res.status(400).json({ error: 'Signatories must be added before sending for signature' });
       }
     }
 
     if (toStatus === 'REVISION_REQUESTED' && !comment) {
-      return res.status(400).json({ error: 'Укажите причину возврата на доработку (comment)' });
+      return res.status(400).json({ error: 'Please provide a reason for revision request (comment)' });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -171,7 +171,7 @@ router.post('/transition', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(result);
   } catch (error) {
     console.error('Workflow transition error:', error);
-    return res.status(500).json({ error: 'Ошибка при переходе по рабочему процессу' });
+    return res.status(500).json({ error: 'Error performing workflow transition' });
   }
 });
 
@@ -181,11 +181,11 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
     const { documentIds, toStatus, comment } = req.body;
 
     if (!Array.isArray(documentIds) || documentIds.length === 0 || !toStatus) {
-      return res.status(400).json({ error: 'Обязательные поля: documentIds (массив), toStatus' });
+      return res.status(400).json({ error: 'Required fields: documentIds (array), toStatus' });
     }
 
     if (documentIds.length > 50) {
-      return res.status(400).json({ error: 'Максимум 50 документов за одну операцию' });
+      return res.status(400).json({ error: 'Maximum 50 documents per operation' });
     }
 
     const results: { documentId: string; success: boolean; error?: string }[] = [];
@@ -194,7 +194,7 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
       try {
         const document = await prisma.document.findUnique({ where: { id: docId } });
         if (!document || document.deletedAt) {
-          results.push({ documentId: docId, success: false, error: 'Документ не найден' });
+          results.push({ documentId: docId, success: false, error: 'Document not found' });
           continue;
         }
 
@@ -203,7 +203,7 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
           results.push({
             documentId: docId,
             success: false,
-            error: `Невозможно перейти из "${document.status}" в "${toStatus}"`,
+            error: `Cannot transition from "${document.status}" to "${toStatus}"`,
           });
           continue;
         }
@@ -228,7 +228,7 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
 
         results.push({ documentId: docId, success: true });
       } catch (err) {
-        results.push({ documentId: docId, success: false, error: 'Внутренняя ошибка' });
+        results.push({ documentId: docId, success: false, error: 'Internal error' });
       }
     }
 
@@ -236,12 +236,12 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
     const failCount = results.filter((r) => !r.success).length;
 
     return res.json({
-      message: `Обработано: ${successCount} успешно, ${failCount} с ошибками`,
+      message: `Processed: ${successCount} successful, ${failCount} failed`,
       results,
     });
   } catch (error) {
     console.error('Bulk transition error:', error);
-    return res.status(500).json({ error: 'Ошибка при массовом переходе по рабочему процессу' });
+    return res.status(500).json({ error: 'Error performing batch workflow transition' });
   }
 });
 

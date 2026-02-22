@@ -72,21 +72,21 @@ export async function transitionDocument(
   });
 
   if (!document) {
-    throw new Error(`Документ с ID "${documentId}" не найден`);
+    throw new Error(`Document with ID "${documentId}" not found`);
   }
 
   if (document.deletedAt) {
-    throw new Error(`Документ "${document.title}" удалён и не может быть изменён`);
+    throw new Error(`Document "${document.title}" is deleted and cannot be modified`);
   }
 
   const fromStatus = document.status;
 
   // 2. Проверяем допустимость перехода
   if (!isTransitionAllowed(fromStatus, toStatus)) {
-    const allowedList = getAllowedTransitions(fromStatus).join(', ') || 'нет доступных переходов';
+    const allowedList = getAllowedTransitions(fromStatus).join(', ') || 'no available transitions';
     throw new Error(
-      `Недопустимый переход статуса: ${fromStatus} → ${toStatus}. ` +
-      `Допустимые переходы из "${fromStatus}": ${allowedList}`
+      `Invalid status transition: ${fromStatus} → ${toStatus}. ` +
+      `Allowed transitions from "${fromStatus}": ${allowedList}`
     );
   }
 
@@ -95,7 +95,7 @@ export async function transitionDocument(
     // При переходе на подписание проверяем наличие хотя бы одной подписи
     if (document.signatures.length === 0) {
       throw new Error(
-        'Невозможно отправить на подписание: не назначены подписанты'
+        'Cannot submit for signature: no signatories assigned'
       );
     }
   }
@@ -107,7 +107,7 @@ export async function transitionDocument(
     );
     if (pendingSignatures.length > 0) {
       throw new Error(
-        `Невозможно завершить подписание: ${pendingSignatures.length} подпись(ей) ожидает(ют)`
+        `Cannot complete signing: ${pendingSignatures.length} signature(s) pending`
       );
     }
   }
