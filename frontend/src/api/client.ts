@@ -43,7 +43,7 @@ export function getApiError(error: unknown, fallback: string): string {
   };
 
   // Ant Design form validation error - let the form handle it
-  if (err.errorFields) return '';
+  if (err.errorFields) return fallback;
 
   // Extract server error message
   const serverMsg = err.response?.data?.error || err.response?.data?.message;

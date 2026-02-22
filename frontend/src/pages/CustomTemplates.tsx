@@ -36,7 +36,9 @@ const CustomTemplates: React.FC = () => {
     try {
       const res = await apiClient.get('/custom-templates', { params: { projectId } });
       setTemplates(res.data || []);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 
@@ -45,7 +47,9 @@ const CustomTemplates: React.FC = () => {
       const res = await apiClient.get(`/custom-templates/${id}`);
       setSelectedTemplate(res.data);
       setDetailVisible(true);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const handleSave = async (values: any) => {

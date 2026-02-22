@@ -36,7 +36,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: packages, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List packages error:', error);
-    return res.status(500).json({ error: 'Error fetching package list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching package list: ${detail}` });
   }
 });
 
@@ -74,7 +75,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(pkg);
   } catch (error) {
     console.error('Get package error:', error);
-    return res.status(500).json({ error: 'Error fetching package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching package: ${detail}` });
   }
 });
 
@@ -106,7 +108,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(pkg);
   } catch (error) {
     console.error('Create package error:', error);
-    return res.status(500).json({ error: 'Error creating package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating package: ${detail}` });
   }
 });
 
@@ -137,7 +140,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(pkg);
   } catch (error) {
     console.error('Update package error:', error);
-    return res.status(500).json({ error: 'Error updating package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating package: ${detail}` });
   }
 });
 
@@ -160,7 +164,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Package deleted' });
   } catch (error) {
     console.error('Delete package error:', error);
-    return res.status(500).json({ error: 'Error deleting package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting package: ${detail}` });
   }
 });
 
@@ -219,11 +224,12 @@ router.post('/:id/items', async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json(item);
   } catch (error: any) {
-    if (error?.code === 'P2002') {
+    if ((error as any)?.code === 'P2002') {
       return res.status(409).json({ error: 'Document already added to this package' });
     }
     console.error('Add package item error:', error);
-    return res.status(500).json({ error: 'Error adding document to package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error adding document to package: ${detail}` });
   }
 });
 
@@ -267,7 +273,8 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
         if (err?.code === 'P2002') {
           errors.push(`Document ${item.documentId} already in package`);
         } else {
-          errors.push(`Error for document ${item.documentId}`);
+          const errDetail = err instanceof Error ? err.message : 'Unknown error';
+          errors.push(`Error for document ${item.documentId}: ${errDetail}`);
         }
       }
     }
@@ -287,7 +294,8 @@ router.post('/:id/items/bulk', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Bulk add package items error:', error);
-    return res.status(500).json({ error: 'Error bulk adding documents to package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error bulk adding documents to package: ${detail}` });
   }
 });
 
@@ -304,7 +312,8 @@ router.delete('/:packageId/items/:itemId', async (req: AuthRequest, res: Respons
     return res.json({ message: 'Document removed from package' });
   } catch (error) {
     console.error('Remove package item error:', error);
-    return res.status(500).json({ error: 'Error removing document from package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error removing document from package: ${detail}` });
   }
 });
 
@@ -433,7 +442,8 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
       where: { id: req.params.id },
       data: { status: 'DRAFT' },
     }).catch(() => {});
-    return res.status(500).json({ error: 'Error generating package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error generating package: ${detail}` });
   }
 });
 
@@ -457,7 +467,8 @@ router.put('/:id/deliver', requireRole('ADMIN', 'PROJECT_MANAGER', 'ENGINEER'), 
     return res.json({ message: 'Package marked as delivered', package: updated });
   } catch (error) {
     console.error('Deliver package error:', error);
-    return res.status(500).json({ error: 'Error delivering package' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error delivering package: ${detail}` });
   }
 });
 

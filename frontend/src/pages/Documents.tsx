@@ -227,7 +227,8 @@ const Documents: React.FC = () => {
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -253,7 +254,8 @@ const Documents: React.FC = () => {
       openDocumentDetail(selectedDocument.id);
       fetchDocuments();
     } catch (error: unknown) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     } finally {
       setActionLoading(false);
     }

@@ -51,7 +51,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: documents, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List documents error:', error);
-    return res.status(500).json({ error: 'Error fetching documents list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching documents list: ${detail}` });
   }
 });
 
@@ -95,7 +96,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(document);
   } catch (error) {
     console.error('Get document error:', error);
-    return res.status(500).json({ error: 'Error fetching document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching document: ${detail}` });
   }
 });
 
@@ -161,7 +163,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(document);
   } catch (error) {
     console.error('Create document error:', error);
-    return res.status(500).json({ error: 'Error creating document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating document: ${detail}` });
   }
 });
 
@@ -205,7 +208,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(document);
   } catch (error) {
     console.error('Update document error:', error);
-    return res.status(500).json({ error: 'Error updating document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating document: ${detail}` });
   }
 });
 
@@ -263,7 +267,8 @@ router.post('/:id/revision', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(revision);
   } catch (error) {
     console.error('Create revision error:', error);
-    return res.status(500).json({ error: 'Error creating document revision' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating document revision: ${detail}` });
   }
 });
 
@@ -302,7 +307,8 @@ router.post('/:id/signatures', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(signature);
   } catch (error) {
     console.error('Add signature error:', error);
-    return res.status(500).json({ error: 'Error adding signatory' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error adding signatory: ${detail}` });
   }
 });
 
@@ -370,7 +376,8 @@ router.put('/:docId/signatures/:sigId/sign', async (req: AuthRequest, res: Respo
     return res.json(updated);
   } catch (error) {
     console.error('Sign document error:', error);
-    return res.status(500).json({ error: 'Error signing document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error signing document: ${detail}` });
   }
 });
 
@@ -429,7 +436,8 @@ router.put('/:docId/signatures/:sigId/reject', async (req: AuthRequest, res: Res
     return res.json(updated);
   } catch (error) {
     console.error('Reject signature error:', error);
-    return res.status(500).json({ error: 'Error rejecting signature' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error rejecting signature: ${detail}` });
   }
 });
 
@@ -457,7 +465,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Document deleted' });
   } catch (error) {
     console.error('Delete document error:', error);
-    return res.status(500).json({ error: 'Error deleting document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting document: ${detail}` });
   }
 });
 
@@ -549,7 +558,8 @@ router.post('/:id/generate', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Generate document error:', error);
-    return res.status(500).json({ error: 'Error generating document' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error generating document: ${detail}` });
   }
 });
 

@@ -28,7 +28,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: journals });
   } catch (error) {
     console.error('List journals error:', error);
-    return res.status(500).json({ error: 'Error fetching journals list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching journals list: ${detail}` });
   }
 });
 
@@ -50,7 +51,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(journal);
   } catch (error) {
     console.error('Get journal error:', error);
-    return res.status(500).json({ error: 'Error fetching journal' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching journal: ${detail}` });
   }
 });
 
@@ -89,7 +91,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(journal);
   } catch (error) {
     console.error('Create journal error:', error);
-    return res.status(500).json({ error: 'Error creating journal' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating journal: ${detail}` });
   }
 });
 
@@ -120,7 +123,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(journal);
   } catch (error) {
     console.error('Update journal error:', error);
-    return res.status(500).json({ error: 'Error updating journal' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating journal: ${detail}` });
   }
 });
 
@@ -148,7 +152,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Journal deleted' });
   } catch (error) {
     console.error('Delete journal error:', error);
-    return res.status(500).json({ error: 'Error deleting journal' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting journal: ${detail}` });
   }
 });
 
@@ -199,7 +204,8 @@ router.get('/:id/entries', async (req: AuthRequest, res: Response) => {
     return res.json({ data: entries, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List journal entries error:', error);
-    return res.status(500).json({ error: 'Error fetching journal entries' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching journal entries: ${detail}` });
   }
 });
 
@@ -229,7 +235,8 @@ router.get('/:journalId/entries/:entryId', async (req: AuthRequest, res: Respons
     return res.json(entry);
   } catch (error) {
     console.error('Get journal entry error:', error);
-    return res.status(500).json({ error: 'Error fetching journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching journal entry: ${detail}` });
   }
 });
 
@@ -314,7 +321,8 @@ router.post('/:id/entries', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(full);
   } catch (error) {
     console.error('Create journal entry error:', error);
-    return res.status(500).json({ error: 'Error creating journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating journal entry: ${detail}` });
   }
 });
 
@@ -356,7 +364,8 @@ router.put('/:journalId/entries/:entryId', async (req: AuthRequest, res: Respons
     return res.json(updated);
   } catch (error) {
     console.error('Update journal entry error:', error);
-    return res.status(500).json({ error: 'Error updating journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating journal entry: ${detail}` });
   }
 });
 
@@ -376,7 +385,8 @@ router.delete('/:journalId/entries/:entryId', async (req: AuthRequest, res: Resp
     return res.json({ message: 'Journal entry deleted' });
   } catch (error) {
     console.error('Delete journal entry error:', error);
-    return res.status(500).json({ error: 'Error deleting journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting journal entry: ${detail}` });
   }
 });
 
@@ -414,7 +424,8 @@ router.post('/:journalId/entries/:entryId/link-document', async (req: AuthReques
       return res.status(409).json({ error: 'Document is already linked to this journal entry' });
     }
     console.error('Link document error:', error);
-    return res.status(500).json({ error: 'Error linking document to journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error linking document to journal entry: ${detail}` });
   }
 });
 
@@ -431,7 +442,8 @@ router.delete('/:journalId/entries/:entryId/link-document/:linkId', async (req: 
     return res.json({ message: 'Document link deleted' });
   } catch (error) {
     console.error('Unlink document error:', error);
-    return res.status(500).json({ error: 'Error unlinking document from journal entry' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error unlinking document from journal entry: ${detail}` });
   }
 });
 

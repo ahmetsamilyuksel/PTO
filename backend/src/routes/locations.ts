@@ -62,7 +62,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: locations });
   } catch (error) {
     console.error('List locations error:', error);
-    return res.status(500).json({ error: 'Error fetching locations list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching locations list: ${detail}` });
   }
 });
 
@@ -88,7 +89,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(location);
   } catch (error) {
     console.error('Get location error:', error);
-    return res.status(500).json({ error: 'Error fetching location' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching location: ${detail}` });
   }
 });
 
@@ -129,7 +131,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(location);
   } catch (error) {
     console.error('Create location error:', error);
-    return res.status(500).json({ error: 'Error creating location' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating location: ${detail}` });
   }
 });
 
@@ -176,7 +179,8 @@ router.post('/bulk', async (req: AuthRequest, res: Response) => {
     return res.status(201).json({ data: created, count: created.length });
   } catch (error) {
     console.error('Bulk create locations error:', error);
-    return res.status(500).json({ error: 'Error creating locations in bulk' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating locations in bulk: ${detail}` });
   }
 });
 
@@ -211,7 +215,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(location);
   } catch (error) {
     console.error('Update location error:', error);
-    return res.status(500).json({ error: 'Error updating location' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating location: ${detail}` });
   }
 });
 
@@ -239,7 +244,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Location deleted' });
   } catch (error) {
     console.error('Delete location error:', error);
-    return res.status(500).json({ error: 'Error deleting location' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting location: ${detail}` });
   }
 });
 

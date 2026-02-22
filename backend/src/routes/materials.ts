@@ -49,7 +49,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: materials, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List materials error:', error);
-    return res.status(500).json({ error: 'Error fetching materials list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching materials list: ${detail}` });
   }
 });
 
@@ -86,7 +87,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(material);
   } catch (error) {
     console.error('Get material error:', error);
-    return res.status(500).json({ error: 'Error fetching material' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching material: ${detail}` });
   }
 });
 
@@ -127,7 +129,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(material);
   } catch (error) {
     console.error('Create material error:', error);
-    return res.status(500).json({ error: 'Error creating material' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating material: ${detail}` });
   }
 });
 
@@ -164,7 +167,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(material);
   } catch (error) {
     console.error('Update material error:', error);
-    return res.status(500).json({ error: 'Error updating material' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating material: ${detail}` });
   }
 });
 
@@ -184,7 +188,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Material deleted' });
   } catch (error) {
     console.error('Delete material error:', error);
-    return res.status(500).json({ error: 'Error deleting material' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting material: ${detail}` });
   }
 });
 
@@ -208,7 +213,8 @@ router.get('/:id/certificates', async (req: AuthRequest, res: Response) => {
     return res.json({ data: certificates });
   } catch (error) {
     console.error('List certificates error:', error);
-    return res.status(500).json({ error: 'Error fetching certificates' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching certificates: ${detail}` });
   }
 });
 
@@ -246,7 +252,8 @@ router.post('/:id/certificates', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(certificate);
   } catch (error) {
     console.error('Create certificate error:', error);
-    return res.status(500).json({ error: 'Error creating certificate' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating certificate: ${detail}` });
   }
 });
 
@@ -280,7 +287,8 @@ router.put('/:materialId/certificates/:certId', async (req: AuthRequest, res: Re
     return res.json(updated);
   } catch (error) {
     console.error('Update certificate error:', error);
-    return res.status(500).json({ error: 'Error updating certificate' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating certificate: ${detail}` });
   }
 });
 
@@ -297,7 +305,8 @@ router.delete('/:materialId/certificates/:certId', async (req: AuthRequest, res:
     return res.json({ message: 'Certificate deleted' });
   } catch (error) {
     console.error('Delete certificate error:', error);
-    return res.status(500).json({ error: 'Error deleting certificate' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting certificate: ${detail}` });
   }
 });
 
@@ -325,7 +334,8 @@ router.get('/:id/incoming-controls', async (req: AuthRequest, res: Response) => 
     return res.json({ data: controls });
   } catch (error) {
     console.error('List incoming controls error:', error);
-    return res.status(500).json({ error: 'Error fetching incoming control records' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching incoming control records: ${detail}` });
   }
 });
 
@@ -370,7 +380,8 @@ router.post('/:id/incoming-controls', async (req: AuthRequest, res: Response) =>
     return res.status(201).json(control);
   } catch (error) {
     console.error('Create incoming control error:', error);
-    return res.status(500).json({ error: 'Error creating incoming control record' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating incoming control record: ${detail}` });
   }
 });
 
@@ -403,7 +414,8 @@ router.put('/:materialId/incoming-controls/:controlId', async (req: AuthRequest,
     return res.json(updated);
   } catch (error) {
     console.error('Update incoming control error:', error);
-    return res.status(500).json({ error: 'Error updating incoming control record' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating incoming control record: ${detail}` });
   }
 });
 
@@ -450,7 +462,8 @@ router.post('/:id/usages', async (req: AuthRequest, res: Response) => {
       return res.status(409).json({ error: 'Material is already linked to this work item' });
     }
     console.error('Create material usage error:', error);
-    return res.status(500).json({ error: 'Error linking material to work item' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error linking material to work item: ${detail}` });
   }
 });
 
@@ -467,7 +480,8 @@ router.delete('/:materialId/usages/:usageId', async (req: AuthRequest, res: Resp
     return res.json({ message: 'Material-work item link deleted' });
   } catch (error) {
     console.error('Delete material usage error:', error);
-    return res.status(500).json({ error: 'Error deleting material-work item link' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting material-work item link: ${detail}` });
   }
 });
 

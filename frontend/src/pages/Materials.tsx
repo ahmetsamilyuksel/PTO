@@ -79,8 +79,8 @@ const Materials: React.FC = () => {
       const data = response.data;
       setMaterials(data.data || data || []);
       setTotal(data.total || 0);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setLoading(false);
     }
@@ -94,8 +94,8 @@ const Materials: React.FC = () => {
     try {
       const response = await apiClient.get(`/materials/${id}`);
       setSelectedMaterial(response.data);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setDetailLoading(false);
     }

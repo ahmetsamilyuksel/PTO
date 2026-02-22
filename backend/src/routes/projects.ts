@@ -51,7 +51,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: projects, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List projects error:', error);
-    return res.status(500).json({ error: 'Error fetching projects list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching projects list: ${detail}` });
   }
 });
 
@@ -92,7 +93,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(project);
   } catch (error) {
     console.error('Get project error:', error);
-    return res.status(500).json({ error: 'Error fetching project' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching project: ${detail}` });
   }
 });
 
@@ -149,7 +151,8 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     return res.status(201).json(project);
   } catch (error) {
     console.error('Create project error:', error);
-    return res.status(500).json({ error: 'Error creating project' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating project: ${detail}` });
   }
 });
 
@@ -287,7 +290,8 @@ router.post('/setup-wizard', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req
     return res.status(201).json(full);
   } catch (error) {
     console.error('Setup wizard error:', error);
-    return res.status(500).json({ error: 'Error creating project via setup wizard' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating project via setup wizard: ${detail}` });
   }
 });
 
@@ -409,7 +413,8 @@ router.get('/:id/dashboard', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Project dashboard error:', error);
-    return res.status(500).json({ error: 'Error fetching dashboard data' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching dashboard data: ${detail}` });
   }
 });
 
@@ -452,7 +457,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(project);
   } catch (error) {
     console.error('Update project error:', error);
-    return res.status(500).json({ error: 'Error updating project' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating project: ${detail}` });
   }
 });
 
@@ -472,7 +478,8 @@ router.delete('/:id', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthR
     return res.json({ message: 'Project deleted' });
   } catch (error) {
     console.error('Delete project error:', error);
-    return res.status(500).json({ error: 'Error deleting project' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting project: ${detail}` });
   }
 });
 
@@ -513,7 +520,8 @@ router.post('/:id/members', async (req: AuthRequest, res: Response) => {
       return res.status(409).json({ error: 'Member with this role already added to project' });
     }
     console.error('Add member error:', error);
-    return res.status(500).json({ error: 'Error adding member' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error adding member: ${detail}` });
   }
 });
 
@@ -530,7 +538,8 @@ router.delete('/:id/members/:memberId', async (req: AuthRequest, res: Response) 
     return res.json({ message: 'Member removed from project' });
   } catch (error) {
     console.error('Remove member error:', error);
-    return res.status(500).json({ error: 'Error removing member' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error removing member: ${detail}` });
   }
 });
 

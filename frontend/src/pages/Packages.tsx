@@ -47,8 +47,8 @@ const Packages: React.FC = () => {
       const response = await apiClient.get('/packages', { params: { projectId } });
       const data = response.data;
       setPackages(data.data || data || []);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setLoading(false);
     }
@@ -69,8 +69,8 @@ const Packages: React.FC = () => {
       const docs = data.data || data || [];
       setAvailableDocs(docs);
       setSelectedDocIds(docs.map((d: Document) => d.id));
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setDocsLoading(false);
     }
@@ -82,8 +82,8 @@ const Packages: React.FC = () => {
     try {
       const response = await apiClient.get(`/packages/${id}`);
       setSelectedPackage(response.data);
-    } catch {
-      message.error(t.app.error);
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
     } finally {
       setDetailLoading(false);
     }
@@ -133,7 +133,7 @@ const Packages: React.FC = () => {
       link.href = url; link.setAttribute('download', `package-${packageId}.zip`);
       document.body.appendChild(link); link.click(); link.remove();
       window.URL.revokeObjectURL(url);
-    } catch { message.error(t.app.error); }
+    } catch (error) { message.error(getApiError(error, t.app.error)); }
   };
 
   const handleDownloadInventory = async (packageId: string) => {
@@ -144,7 +144,7 @@ const Packages: React.FC = () => {
       link.href = url; link.setAttribute('download', `inventory-${packageId}.pdf`);
       document.body.appendChild(link); link.click(); link.remove();
       window.URL.revokeObjectURL(url);
-    } catch { message.error(t.app.error); }
+    } catch (error) { message.error(getApiError(error, t.app.error)); }
   };
 
   const columns = [

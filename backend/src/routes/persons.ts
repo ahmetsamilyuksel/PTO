@@ -53,7 +53,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: persons, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List persons error:', error);
-    return res.status(500).json({ error: 'Error fetching persons list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching persons list: ${detail}` });
   }
 });
 
@@ -91,7 +92,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(person);
   } catch (error) {
     console.error('Get person error:', error);
-    return res.status(500).json({ error: 'Error fetching person' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching person: ${detail}` });
   }
 });
 
@@ -156,7 +158,8 @@ router.post('/', requireRole('ADMIN', 'PROJECT_MANAGER'), async (req: AuthReques
     return res.status(201).json(person);
   } catch (error) {
     console.error('Create person error:', error);
-    return res.status(500).json({ error: 'Error creating person' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating person: ${detail}` });
   }
 });
 
@@ -220,7 +223,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(person);
   } catch (error) {
     console.error('Update person error:', error);
-    return res.status(500).json({ error: 'Error updating person' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating person: ${detail}` });
   }
 });
 
@@ -244,7 +248,8 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
     return res.json({ message: 'Person deleted' });
   } catch (error) {
     console.error('Delete person error:', error);
-    return res.status(500).json({ error: 'Error deleting person' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting person: ${detail}` });
   }
 });
 

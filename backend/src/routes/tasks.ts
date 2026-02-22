@@ -52,7 +52,8 @@ router.get('/', async (req: Request, res: Response) => {
     res.json({ data: tasks, total, page: parseInt(page as string), pageSize: take });
   } catch (error) {
     console.error('Error fetching tasks:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch tasks: ${detail}` });
   }
 });
 
@@ -93,7 +94,8 @@ router.get('/my', async (req: Request, res: Response) => {
     res.json(tasks);
   } catch (error) {
     console.error('Error fetching my tasks:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch tasks: ${detail}` });
   }
 });
 
@@ -139,7 +141,8 @@ router.get('/reminders', async (req: Request, res: Response) => {
     res.json({ overdue, upcoming, withReminder, total: tasks.length });
   } catch (error) {
     console.error('Error fetching reminders:', error);
-    res.status(500).json({ error: 'Failed to fetch reminders' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch reminders: ${detail}` });
   }
 });
 
@@ -170,7 +173,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.json(task);
   } catch (error) {
     console.error('Error fetching task:', error);
-    res.status(500).json({ error: 'Failed to fetch task' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch task: ${detail}` });
   }
 });
 
@@ -215,13 +219,19 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(201).json(task);
   } catch (error) {
     console.error('Error creating task:', error);
-    res.status(500).json({ error: 'Failed to create task' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to create task: ${detail}` });
   }
 });
 
 // PUT /api/tasks/:id
 router.put('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.task.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
     const { title, description, priority, status, dueDate, reminderDate, notes } = req.body;
 
     const updateData: any = {};
@@ -251,7 +261,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.json(task);
   } catch (error) {
     console.error('Error updating task:', error);
-    res.status(500).json({ error: 'Failed to update task' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update task: ${detail}` });
   }
 });
 
@@ -279,17 +290,23 @@ router.post('/:id/assign', async (req: Request, res: Response) => {
 
     res.status(201).json(assignment);
   } catch (error: any) {
-    if (error.code === 'P2002') {
+    if (error?.code === 'P2002') {
       return res.status(409).json({ error: 'User is already assigned to this task' });
     }
     console.error('Error assigning task:', error);
-    res.status(500).json({ error: 'Failed to assign task' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to assign task: ${detail}` });
   }
 });
 
 // PUT /api/tasks/:id/assignments/:assignmentId
 router.put('/:id/assignments/:assignmentId', async (req: Request, res: Response) => {
   try {
+    const existingAssignment = await prisma.taskAssignment.findUnique({ where: { id: req.params.assignmentId } });
+    if (!existingAssignment || existingAssignment.taskId !== req.params.id) {
+      return res.status(404).json({ error: 'Assignment not found' });
+    }
+
     const { status, comment } = req.body;
 
     const updateData: any = {};
@@ -310,7 +327,8 @@ router.put('/:id/assignments/:assignmentId', async (req: Request, res: Response)
     res.json(assignment);
   } catch (error) {
     console.error('Error updating assignment:', error);
-    res.status(500).json({ error: 'Failed to update assignment' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to update assignment: ${detail}` });
   }
 });
 
@@ -356,7 +374,8 @@ router.post('/:id/message', async (req: Request, res: Response) => {
     res.status(201).json({ messages });
   } catch (error) {
     console.error('Error adding message:', error);
-    res.status(500).json({ error: 'Failed to add message' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to add message: ${detail}` });
   }
 });
 
@@ -376,13 +395,19 @@ router.get('/:id/messages', async (req: Request, res: Response) => {
     res.json({ messages });
   } catch (error) {
     console.error('Error fetching messages:', error);
-    res.status(500).json({ error: 'Failed to fetch messages' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to fetch messages: ${detail}` });
   }
 });
 
 // DELETE /api/tasks/:id (soft delete)
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
+    const existing = await prisma.task.findUnique({ where: { id: req.params.id } });
+    if (!existing || existing.deletedAt) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
     await prisma.task.update({
       where: { id: req.params.id },
       data: { deletedAt: new Date() },
@@ -391,7 +416,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     res.json({ message: 'Task deleted' });
   } catch (error) {
     console.error('Error deleting task:', error);
-    res.status(500).json({ error: 'Failed to delete task' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: `Failed to delete task: ${detail}` });
   }
 });
 

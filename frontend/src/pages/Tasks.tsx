@@ -54,7 +54,9 @@ const Tasks: React.FC = () => {
       const res = await apiClient.get('/tasks', { params });
       setTasks(res.data.data || []);
       setTotal(res.data.total || 0);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
     setLoading(false);
   };
 
@@ -128,7 +130,8 @@ const Tasks: React.FC = () => {
         setSelectedTask(res.data);
       }
     } catch (error) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -141,7 +144,8 @@ const Tasks: React.FC = () => {
       setSelectedTask(res.data);
       fetchTasks();
     } catch (error) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 
@@ -153,7 +157,8 @@ const Tasks: React.FC = () => {
       setTaskMessages(res.data.messages || []);
       setNewMessage('');
     } catch (error) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
     setSendingMessage(false);
   };
@@ -164,7 +169,8 @@ const Tasks: React.FC = () => {
       message.success(t.app.success);
       fetchTasks();
     } catch (error) {
-      message.error(getApiError(error, t.app.error));
+      const msg = getApiError(error, t.app.error);
+      if (msg) message.error(msg);
     }
   };
 

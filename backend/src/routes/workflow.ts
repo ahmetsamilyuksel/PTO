@@ -44,7 +44,8 @@ router.get('/transitions', async (req: AuthRequest, res: Response) => {
     return res.json({ data: transitions, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List transitions error:', error);
-    return res.status(500).json({ error: 'Error fetching workflow history' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching workflow history: ${detail}` });
   }
 });
 
@@ -70,7 +71,8 @@ router.get('/available-transitions/:documentId', async (req: AuthRequest, res: R
     });
   } catch (error) {
     console.error('Get available transitions error:', error);
-    return res.status(500).json({ error: 'Error fetching available transitions' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching available transitions: ${detail}` });
   }
 });
 
@@ -171,7 +173,8 @@ router.post('/transition', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(result);
   } catch (error) {
     console.error('Workflow transition error:', error);
-    return res.status(500).json({ error: 'Error performing workflow transition' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error performing workflow transition: ${detail}` });
   }
 });
 
@@ -228,7 +231,8 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
 
         results.push({ documentId: docId, success: true });
       } catch (err) {
-        results.push({ documentId: docId, success: false, error: 'Internal error' });
+        const errDetail = err instanceof Error ? err.message : 'Unknown error';
+        results.push({ documentId: docId, success: false, error: `Internal error: ${errDetail}` });
       }
     }
 
@@ -241,7 +245,8 @@ router.post('/bulk-transition', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Bulk transition error:', error);
-    return res.status(500).json({ error: 'Error performing batch workflow transition' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error performing batch workflow transition: ${detail}` });
   }
 });
 

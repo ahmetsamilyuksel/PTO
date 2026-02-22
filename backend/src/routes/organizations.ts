@@ -37,7 +37,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: organizations, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List organizations error:', error);
-    return res.status(500).json({ error: 'Error fetching organizations list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching organizations list: ${detail}` });
   }
 });
 
@@ -69,7 +70,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(org);
   } catch (error) {
     console.error('Get organization error:', error);
-    return res.status(500).json({ error: 'Error fetching organization' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching organization: ${detail}` });
   }
 });
 
@@ -104,7 +106,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(org);
   } catch (error) {
     console.error('Create organization error:', error);
-    return res.status(500).json({ error: 'Error creating organization' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating organization: ${detail}` });
   }
 });
 
@@ -139,7 +142,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(org);
   } catch (error) {
     console.error('Update organization error:', error);
-    return res.status(500).json({ error: 'Error updating organization' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating organization: ${detail}` });
   }
 });
 
@@ -159,7 +163,8 @@ router.delete('/:id', requireRole('ADMIN'), async (req: AuthRequest, res: Respon
     return res.json({ message: 'Organization deleted' });
   } catch (error) {
     console.error('Delete organization error:', error);
-    return res.status(500).json({ error: 'Error deleting organization' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting organization: ${detail}` });
   }
 });
 

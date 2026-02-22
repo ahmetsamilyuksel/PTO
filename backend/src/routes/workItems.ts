@@ -55,7 +55,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.json({ data: workItems, total, page: parseInt(page as string), limit: take });
   } catch (error) {
     console.error('List work items error:', error);
-    return res.status(500).json({ error: 'Error fetching work items list' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching work items list: ${detail}` });
   }
 });
 
@@ -92,7 +93,8 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(workItem);
   } catch (error) {
     console.error('Get work item error:', error);
-    return res.status(500).json({ error: 'Error fetching work item' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error fetching work item: ${detail}` });
   }
 });
 
@@ -148,7 +150,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(201).json(workItem);
   } catch (error) {
     console.error('Create work item error:', error);
-    return res.status(500).json({ error: 'Error creating work item' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error creating work item: ${detail}` });
   }
 });
 
@@ -191,7 +194,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.json(workItem);
   } catch (error) {
     console.error('Update work item error:', error);
-    return res.status(500).json({ error: 'Error updating work item' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating work item: ${detail}` });
   }
 });
 
@@ -229,7 +233,8 @@ router.put('/:id/status', async (req: AuthRequest, res: Response) => {
     return res.json(workItem);
   } catch (error) {
     console.error('Update work item status error:', error);
-    return res.status(500).json({ error: 'Error updating work item status' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error updating work item status: ${detail}` });
   }
 });
 
@@ -261,7 +266,8 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
     return res.json({ message: 'Work item deleted' });
   } catch (error) {
     console.error('Delete work item error:', error);
-    return res.status(500).json({ error: 'Error deleting work item' });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: `Error deleting work item: ${detail}` });
   }
 });
 

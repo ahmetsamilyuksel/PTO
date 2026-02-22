@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Card, Row, Col, Statistic, List, Tag, Typography, Select, Spin, Empty,
-  Badge, Space, Alert,
+  Badge, Space, Alert, message,
 } from 'antd';
 import {
   FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined,
@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import apiClient from '../api/client';
+import apiClient, { getApiError } from '../api/client';
 import type { Project, DashboardStats, AuditLog, AttentionItem } from '../types';
 import { useI18n } from '../i18n';
 
@@ -53,7 +53,9 @@ const Dashboard: React.FC = () => {
       const data = response.data.data || response.data || [];
       setProjects(data);
       if (!selectedProjectId && data.length > 0) setSelectedProjectId(data[0].id);
-    } catch { /* ignore */ }
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
+    }
   };
 
   const fetchDashboard = async (pid: string) => {
@@ -61,7 +63,8 @@ const Dashboard: React.FC = () => {
     try {
       const response = await apiClient.get(`/projects/${pid}/dashboard`);
       setStats(response.data);
-    } catch {
+    } catch (error) {
+      message.error(getApiError(error, t.app.error));
       setStats({ totalDocuments: 0, signedDocuments: 0, pendingDocuments: 0, missingCertificates: 0, recentActivity: [], attentionItems: [] });
     } finally {
       setLoading(false);
