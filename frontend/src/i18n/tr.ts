@@ -66,6 +66,7 @@ export const tr: TranslationKeys = {
     team: 'Takım',
     categories: 'Kategoriler',
     templates: 'Şablonlar',
+    admin: 'Yönetim Paneli',
   },
 
   // ─── Kontrol Paneli ───
@@ -568,6 +569,48 @@ export const tr: TranslationKeys = {
     usageCount: 'Kullanım',
     createdBy: 'Oluşturan',
     usedIn: 'Kullanılan Dokümanlar',
+  },
+
+  // ─── Yönetim Paneli ───
+  admin: {
+    title: 'Yönetim Paneli',
+    users: 'Kullanıcılar',
+    permissions: 'Yetkiler',
+    createUser: 'Kullanıcı Oluştur',
+    editUser: 'Düzenle',
+    deleteUser: 'Kullanıcı Sil',
+    userRole: 'Rol',
+    position: 'Pozisyon',
+    email: 'E-posta',
+    phone: 'Telefon',
+    organization: 'Kuruluş',
+    projects: 'Projeler',
+    editPermissions: 'Yetkileri Düzenle',
+    resetToDefaults: 'Rol Varsayılanlarına Sıfırla',
+    permissionsSaved: 'Yetkiler kaydedildi',
+    modules: {
+      dashboard: 'Ana Panel',
+      documents: 'Dokümanlar',
+      materials: 'Malzemeler',
+      journals: 'Günlükler',
+      tasks: 'Görevler',
+      corrections: 'Düzeltmeler',
+      packages: 'İD Paketleri',
+      templates: 'Şablonlar',
+      categories: 'Kategoriler',
+      team: 'Takım',
+      matrix: 'Matris',
+      progress: 'İlerleme',
+      admin: 'Yönetim',
+    },
+    actions: {
+      view: 'Görüntüle',
+      create: 'Oluştur',
+      edit: 'Düzenle',
+      delete: 'Sil',
+    },
+    password: 'Şifre',
+    defaultPassword: 'Varsayılan şifre: Temp1234!',
   },
 
   // ─── Sistem Mesajları ───

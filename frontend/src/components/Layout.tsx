@@ -20,6 +20,7 @@ import {
   TeamOutlined,
   AppstoreOutlined,
   SnippetsOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import type { MenuProps } from 'antd';
@@ -185,6 +186,18 @@ const AppLayout: React.FC = () => {
               label: t.menu.templates,
             },
           ],
+        },
+      );
+    }
+
+    // Admin menu - visible only for ADMIN role
+    if (currentUser?.role === 'ADMIN') {
+      items.push(
+        { type: 'divider' as const },
+        {
+          key: '/admin',
+          icon: <CrownOutlined style={{ color: '#ff4d4f' }} />,
+          label: (t.menu as any).admin || 'Admin',
         },
       );
     }

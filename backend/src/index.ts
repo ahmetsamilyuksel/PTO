@@ -25,6 +25,7 @@ import taskRoutes from './routes/tasks';
 import correctionRoutes from './routes/corrections';
 import progressRoutes from './routes/progress';
 import teamRoutes from './routes/team';
+import adminRoutes from './routes/admin';
 import { initMinIO } from './services/storage';
 
 /**
@@ -107,6 +108,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/corrections', correctionRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Export app for Vercel serverless
 export default app;
